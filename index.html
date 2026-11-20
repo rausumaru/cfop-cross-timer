@@ -1331,7 +1331,7 @@
       }
 
       const hasPotentialOutlier = maxV > inlierMax;
-      const maxNormalBins = hasPotentialOutlier ? 6 : 7;
+      const maxNormalBins = hasPotentialOutlier ? 10 : 11;
       const binSteps = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
       let binStep = binSteps.find((s) => {
         const lo = Math.floor(minV / s) * s;
@@ -1410,7 +1410,8 @@
           const endSec = startSec + binStep;
           rangeLabel = `${fmtSec(startSec)}-${fmtSec(endSec)}s`;
         }
-        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9">${rangeLabel}</text>`;
+        const labelFontSize = numBins >= 11 ? 7.5 : (numBins >= 9 ? 8 : 9);
+        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="${labelFontSize}">${rangeLabel}</text>`;
       }
 
       svg.innerHTML = html;
