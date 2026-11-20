@@ -1404,7 +1404,7 @@
         const fmtSec = (ms) => binStep < 1000 ? (ms / 1000).toFixed(1) : Math.round(ms / 1000);
         let rangeLabel;
         if (hasOverflow && b === numNormalBins) {
-          rangeLabel = `${fmtSec(hiBound)}s+`;
+          rangeLabel = `&gt;${fmtSec(hiBound)}s`;
         } else {
           const endSec = loBound + (b + 1) * binStep;
           rangeLabel = `&lt;${fmtSec(endSec)}s`;
