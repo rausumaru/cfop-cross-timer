@@ -1306,29 +1306,58 @@
         return;
       }
 
-      const vals = pts.map((p) => p.val);
-      const minV = Math.min(...vals);
-      const maxV = Math.max(...vals);
+      const sortedVals = pts.map((p) => p.val).sort((a, b) => a - b);
+      const minV = sortedVals[0];
+      const maxV = sortedVals[sortedVals.length - 1];
 
-      const binSteps = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000];
+      const quantile = (arr, q) => {
+        const pos = (arr.length - 1) * q;
+        const lo = Math.floor(pos);
+        const hi = Math.ceil(pos);
+        if (lo === hi) return arr[lo];
+        return arr[lo] + (arr[hi] - arr[lo]) * (pos - lo);
+      };
+
+      let inlierMax = maxV;
+      if (sortedVals.length >= 4) {
+        const q1 = quantile(sortedVals, 0.25);
+        const q3 = quantile(sortedVals, 0.75);
+        const iqr = q3 - q1;
+        const upperFence = q3 + 1.5 * iqr;
+        const inliers = sortedVals.filter((v) => v <= upperFence);
+        if (inliers.length > 0) {
+          inlierMax = inliers[inliers.length - 1];
+        }
+      }
+
+      const hasPotentialOutlier = maxV > inlierMax;
+      const maxNormalBins = hasPotentialOutlier ? 6 : 7;
+      const binSteps = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
       let binStep = binSteps.find((s) => {
         const lo = Math.floor(minV / s) * s;
-        const hi = Math.floor(maxV / s) * s + s;
-        return (hi - lo) / s <= 7;
-      }) || 30000;
+        const hi = Math.floor(inlierMax / s) * s + s;
+        return (hi - lo) / s <= maxNormalBins;
+      }) || 60000;
 
       const loBound = Math.floor(minV / binStep) * binStep;
-      let hiBound = Math.floor(maxV / binStep) * binStep + binStep;
-      const numBins = Math.max(2, Math.round((hiBound - loBound) / binStep));
+      const hiBound = Math.floor(inlierMax / binStep) * binStep + binStep;
+      const numNormalBins = Math.max(hasPotentialOutlier ? 1 : 2, Math.round((hiBound - loBound) / binStep));
+      const hasOverflow = maxV >= hiBound;
+      const numBins = numNormalBins + (hasOverflow ? 1 : 0);
 
       const allCounts = Array(numBins).fill(0);
       const recentCounts = Array(numBins).fill(0);
       const recentStartIdx = Math.max(0, solves.length - 12);
 
       for (const p of pts) {
-        let b = Math.floor((p.val - loBound) / binStep);
-        if (b < 0) b = 0;
-        if (b >= numBins) b = numBins - 1;
+        let b;
+        if (hasOverflow && p.val >= hiBound) {
+          b = numNormalBins;
+        } else {
+          b = Math.floor((p.val - loBound) / binStep);
+          if (b < 0) b = 0;
+          if (b >= numNormalBins) b = numNormalBins - 1;
+        }
         allCounts[b]++;
         if (p.idx >= recentStartIdx) {
           recentCounts[b]++;
@@ -1372,10 +1401,15 @@
           html += `<rect x="${recX.toFixed(1)}" y="${yRec.toFixed(1)}" width="${recW.toFixed(1)}" height="${hRec.toFixed(1)}" rx="1.5" fill="var(--chart-2)" opacity="0.95" />`;
         }
 
-        const startSec = loBound + b * binStep;
-        const endSec = startSec + binStep;
         const fmtSec = (ms) => binStep < 1000 ? (ms / 1000).toFixed(1) : Math.round(ms / 1000);
-        const rangeLabel = `${fmtSec(startSec)}-${fmtSec(endSec)}s`;
+        let rangeLabel;
+        if (hasOverflow && b === numNormalBins) {
+          rangeLabel = `${fmtSec(hiBound)}s+`;
+        } else {
+          const startSec = loBound + b * binStep;
+          const endSec = startSec + binStep;
+          rangeLabel = `${fmtSec(startSec)}-${fmtSec(endSec)}s`;
+        }
         html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9">${rangeLabel}</text>`;
       }
 
