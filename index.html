@@ -1406,12 +1406,10 @@
         if (hasOverflow && b === numNormalBins) {
           rangeLabel = `${fmtSec(hiBound)}s+`;
         } else {
-          const startSec = loBound + b * binStep;
-          const endSec = startSec + binStep;
-          rangeLabel = `${fmtSec(startSec)}-${fmtSec(endSec)}s`;
+          const endSec = loBound + (b + 1) * binStep;
+          rangeLabel = `&lt;${fmtSec(endSec)}s`;
         }
-        const labelFontSize = numBins >= 11 ? 7.5 : (numBins >= 9 ? 8 : 9);
-        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="${labelFontSize}">${rangeLabel}</text>`;
+        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="10">${rangeLabel}</text>`;
       }
 
       svg.innerHTML = html;
