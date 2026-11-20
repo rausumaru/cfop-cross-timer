@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CFOP Cross Practice Timer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    button:focus { outline: none; }
+
+    /* csTimer-inspired UI Themes */
+    [data-ui-theme="cstimer-blue"] {
+      --background: #dbe8f6;
+      --card: #f6faff;
+      --foreground: #1e293b;
+      --muted-foreground: #52657a;
+      --border: #b8cde3;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #dce9f8;
+      --secondary-foreground: #1e3a5f;
+      --success: #16a34a;
+      --warning: #d97706;
+      --error: #dc2626;
+      --chart-1: #2563eb;
+      --chart-2: #f59e0b;
+      --header-bg: #1e40af;
+      --header-fg: #ffffff;
+      --scramble-bg: #e7f0fa;
+    }
+
+    [data-ui-theme="cstimer-warm"] {
+      --background: #eee3ce;
+      --card: #fcf8ef;
+      --foreground: #2c241b;
+      --muted-foreground: #6e5f4f;
+      --border: #d4c4a8;
+      --primary: #d97706;
+      --primary-foreground: #ffffff;
+      --secondary: #efe5d2;
+      --secondary-foreground: #4a3518;
+      --success: #15803d;
+      --warning: #b45309;
+      --error: #dc2626;
+      --chart-1: #0284c7;
+      --chart-2: #d97706;
+      --header-bg: #92400e;
+      --header-fg: #ffffff;
+      --scramble-bg: #f4ebd9;
+    }
+
+    [data-ui-theme="cstimer-dark"] {
+      --background: #0f172a;
+      --card: #1e293b;
+      --foreground: #f1f5f9;
+      --muted-foreground: #94a3b8;
+      --border: #334155;
+      --primary: #38bdf8;
+      --primary-foreground: #0f172a;
+      --secondary: #283548;
+      --secondary-foreground: #e2e8f0;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #f87171;
+      --chart-1: #38bdf8;
+      --chart-2: #fbbf24;
+      --header-bg: #172554;
+      --header-fg: #f8fafc;
+      --scramble-bg: #172234;
+    }
+  </style>
+</head>
+<body data-ui-theme="cstimer-blue" class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 md:h-screen md:overflow-hidden flex flex-col p-2.5 gap-2.5">
+
+  <!-- Top Compact Header -->
+  <header class="shrink-0 bg-[var(--header-bg)] text-[var(--header-fg)] rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-md bg-white/20 text-white flex items-center justify-center font-bold text-xs">
+        +
+      </div>
+      <h1 class="text-sm font-bold leading-none">CFOP Cross Timer</h1>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-1.5 text-xs text-[var(--foreground)]">
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
+        <span class="text-[var(--muted-foreground)] hidden sm:inline">テーマ:</span>
+        <select id="uiThemeSelect" class="bg-transparent font-medium cursor-pointer focus:outline-none">
+          <option value="cstimer-blue" selected>csTimer ブルー</option>
+          <option value="cstimer-warm">csTimer クリーム</option>
+          <option value="cstimer-dark">csTimer ダーク</option>
+        </select>
+      </label>
+
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
+        <span class="text-[var(--muted-foreground)] hidden sm:inline">スクランブル:</span>
+        <select id="crossDifficulty" class="bg-transparent font-medium cursor-pointer focus:outline-none">
+          <option value="standard" selected>標準 (黄1以下)</option>
+          <option value="exact1">1個揃い</option>
+        </select>
+      </label>
+
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
+        <span class="text-[var(--muted-foreground)] hidden sm:inline">インスペクション:</span>
+        <select id="inspectionMode" class="bg-transparent font-medium cursor-pointer focus:outline-none">
+          <option value="wca">15秒 (WCA)</option>
+          <option value="free" selected>無制限</option>
+        </select>
+      </label>
+
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
+        <span class="text-[var(--muted-foreground)] hidden sm:inline">センター合わせ:</span>
+        <select id="centerAlignMode" class="bg-transparent font-medium cursor-pointer focus:outline-none">
+          <option value="with" selected>あり</option>
+          <option value="without">なし</option>
+        </select>
+      </label>
+
+      <button id="soundToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="5, 10, 12, 13, 14秒の通知音">
+        🔊 音: ON
+      </button>
+
+      <button id="netToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="スクランブル展開図の表示切替">
+        展開図: OFF
+      </button>
+
+      <button id="colorSettingsToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="展開図の6色をカスタマイズ">
+        🎨 色調整
+      </button>
+    </div>
+  </header>
+
+  <!-- Main 2-Column Workspace (fits in 1 screen) -->
+  <div class="flex-1 min-h-0 flex flex-col md:flex-row gap-2.5">
+
+    <!-- Left Sidebar: Stats Summary + History List -->
+    <aside class="w-full md:w-72 lg:w-80 shrink-0 flex flex-col gap-2.5 min-h-0">
+      <!-- Compact Stats Grid (2x3) -->
+      <section class="shrink-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 shadow-sm space-y-1.5">
+        <div class="flex items-center justify-between gap-1">
+          <div class="min-w-0">
+            <h2 class="text-xs font-semibold leading-tight">統計</h2>
+            <div id="sessionModeBadge" class="text-[10px] text-[var(--muted-foreground)] truncate">標準 / 無制限 / センターあり</div>
+          </div>
+          <button id="statModeToggle" type="button" class="shrink-0 text-[11px] px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-medium hover:opacity-85 transition cursor-pointer">
+            対象: インスペクション
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1">
+            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Solves</div>
+            <div id="statCount" class="font-mono tabular-nums text-sm font-bold mt-0.5">0 / 0</div>
+          </div>
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--success)]">
+            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Best</div>
+            <div id="statBest" class="font-mono tabular-nums text-sm font-bold text-[var(--success)] mt-0.5">-</div>
+          </div>
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1">
+            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Mean</div>
+            <div id="statMean" class="font-mono tabular-nums text-sm font-bold mt-0.5">-</div>
+          </div>
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--primary)]">
+            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Ao5</div>
+            <div id="statAo5" class="font-mono tabular-nums text-sm font-bold text-[var(--primary)] mt-0.5">-</div>
+          </div>
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--chart-1)]">
+            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Ao12</div>
+            <div id="statAo12" class="font-mono tabular-nums text-sm font-bold mt-0.5">-</div>
+          </div>
+          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--warning)]">
+            <div id="statSubMeanLabel" class="text-[10px] text-[var(--muted-foreground)] leading-tight">Mean Solve</div>
+            <div id="statInspMean" class="font-mono tabular-nums text-sm font-bold text-[var(--warning)] mt-0.5">-</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Table (fills remaining sidebar height) -->
+      <section class="flex-1 min-h-[200px] md:min-h-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col">
+        <div class="shrink-0 flex items-center justify-between mb-1.5">
+          <h2 class="text-xs font-semibold">試行履歴 <span class="text-[10px] font-normal text-[var(--muted-foreground)]">(行クリックでスクランブル)</span></h2>
+          <button id="clearHistoryBtn" type="button" class="text-[11px] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] transition cursor-pointer">
+            リセット
+          </button>
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto border border-[var(--border)] rounded-lg">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead class="bg-[var(--background)] text-[var(--muted-foreground)] sticky top-0 text-[11px]">
+              <tr>
+                <th class="py-1.5 px-2 font-medium">#</th>
+                <th class="py-1.5 px-1.5 font-medium">Solve</th>
+                <th class="py-1.5 px-1.5 font-medium">Insp.</th>
+                <th class="py-1.5 px-1.5 font-medium">Ao5</th>
+                <th class="py-1.5 px-1.5 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody" class="divide-y divide-[var(--border)]">
+              <tr>
+                <td colspan="5" class="py-6 text-center text-[var(--muted-foreground)]">まだ記録がありません</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Main Panel: Scramble (top) + Timer (middle) + Chart & Cube Net (bottom) -->
+    <main class="flex-1 min-w-0 min-h-0 flex flex-col gap-2.5">
+
+      <!-- Scramble Bar -->
+      <section class="shrink-0 bg-[var(--scramble-bg)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-sm">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)] mb-0.5">
+            <span id="scrambleBadge" class="px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-medium">Cross練習 12手</span>
+            <span>白上 (U) / 緑前 (F)</span>
+          </div>
+          <div id="scrambleText" class="font-mono text-base sm:text-xl font-semibold tracking-wide break-words select-all leading-snug">
+            ...
+          </div>
+        </div>
+        <button id="nextScrambleBtn" type="button" class="shrink-0 text-xs px-3 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-medium hover:opacity-90 transition cursor-pointer shadow-sm">
+          次へ (N)
+        </button>
+      </section>
+
+      <!-- Main Timer Area (fills middle space comfortably) -->
+      <section id="timerArea" class="flex-1 min-h-[170px] bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-3 flex flex-col items-center justify-center select-none cursor-pointer transition-colors shadow-sm">
+        <div id="stateLabel" class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)] mb-1.5">
+          待機中
+        </div>
+
+        <div id="timerDisplay" class="font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none my-1">
+          0.00
+        </div>
+
+        <div id="inspectionSub" class="h-4 text-xs font-mono text-[var(--muted-foreground)] mt-1"></div>
+
+        <p id="timerHint" class="text-[11px] text-[var(--muted-foreground)] mt-1.5 text-center">
+          Spaceを押して離すとインスペクション開始（タップ操作も可）
+        </p>
+
+        <!-- Quick actions for latest solve -->
+        <div id="quickActions" class="mt-2.5 flex items-center gap-1.5 opacity-0 pointer-events-none transition-opacity">
+          <button id="btnOk" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">OK</button>
+          <button id="btnPlus2" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">+2</button>
+          <button id="btnDnf" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">DNF</button>
+          <button id="btnDeleteLast" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer">削除</button>
+        </div>
+      </section>
+
+      <!-- Bottom Row: Trend Chart + Cube Net -->
+      <section class="shrink-0 grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+        <!-- Trend Chart -->
+        <div id="chartCard" class="sm:col-span-12 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col shadow-sm">
+          <div class="flex flex-wrap items-center justify-between mb-1 gap-1.5">
+            <div class="flex items-center gap-1.5">
+              <h2 id="chartTitle" class="text-xs font-semibold">グラフ</h2>
+              <button id="chartViewToggle" type="button" class="text-[11px] px-2 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-medium hover:opacity-90 transition cursor-pointer">
+                推移: Ao5/12/50
+              </button>
+              <button id="chartModeToggle" type="button" class="text-[11px] px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-medium hover:opacity-85 transition cursor-pointer">
+                表示: インスペクション
+              </button>
+            </div>
+            <span id="chartLegend" class="text-[11px] font-medium flex items-center gap-2">
+              <span class="text-[var(--chart-1)]">― Ao5</span>
+              <span class="text-[var(--chart-2)]">― Ao12</span>
+              <span class="text-[var(--success)]">― Ao50</span>
+            </span>
+          </div>
+          <div class="flex-1 flex items-center justify-center">
+            <svg id="trendChart" viewBox="0 0 360 120" class="w-full h-[120px] overflow-visible"></svg>
+          </div>
+        </div>
+
+        <!-- 3x3x3 Cube Net (hidden by default) -->
+        <div id="netCard" class="hidden sm:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col items-center justify-center gap-1">
+          <canvas id="cubeNet" width="174" height="131" class="block"></canvas>
+          <span class="text-[10px] text-[var(--muted-foreground)]">展開図 (U=白, F=緑)</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Color Palette Customizer Modal -->
+  <div id="colorSettingsPanel" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 w-full max-w-3xl max-h-[90vh] overflow-y-auto space-y-3 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2">
+        <div>
+          <h2 class="text-sm font-semibold">展開図カラー調整</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">調整したい面を選んでスライダー・プリセット・HEXコード（例: #ffffff）で色を指定できます</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button id="resetColorsBtn" type="button" class="px-2.5 py-1 rounded border border-[var(--border)] hover:bg-[var(--secondary)] transition cursor-pointer">
+            デフォルトに戻す
+          </button>
+          <button id="closeColorsBtn" type="button" class="px-2.5 py-1 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer">
+            閉じる
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-stretch justify-between gap-4">
+        <!-- Left: 7 color cards + Custom HSL Picker -->
+        <div class="flex-1 space-y-3">
+          <div id="colorInputsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <!-- Generated by JS -->
+          </div>
+
+          <!-- Custom Safe Color Picker -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-lg p-3 space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span id="activeColorSwatch" class="w-4 h-4 rounded border border-[var(--border)] inline-block"></span>
+                <span class="font-medium">編集中: <span id="activeColorLabel" class="text-[var(--primary)]"></span></span>
+              </div>
+              <span id="activeColorHexBadge" class="font-mono text-[var(--muted-foreground)]"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+              <label class="flex flex-col gap-1">
+                <span class="flex justify-between text-[var(--muted-foreground)]"><span>色相 (H)</span><span id="hslHVal" class="font-mono">0°</span></span>
+                <input id="hslH" type="range" min="0" max="360" value="0" class="w-full accent-[var(--primary)] cursor-pointer" />
+              </label>
+              <label class="flex flex-col gap-1">
+                <span class="flex justify-between text-[var(--muted-foreground)]"><span>彩度 (S)</span><span id="hslSVal" class="font-mono">0%</span></span>
+                <input id="hslS" type="range" min="0" max="100" value="0" class="w-full accent-[var(--primary)] cursor-pointer" />
+              </label>
+              <label class="flex flex-col gap-1">
+                <span class="flex justify-between text-[var(--muted-foreground)]"><span>明るさ (L)</span><span id="hslLVal" class="font-mono">100%</span></span>
+                <input id="hslL" type="range" min="0" max="100" value="100" class="w-full accent-[var(--primary)] cursor-pointer" />
+              </label>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+              <span class="text-[11px] text-[var(--muted-foreground)] mr-1">よく使う色:</span>
+              <div id="presetSwatches" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Sample Net -->
+        <div class="shrink-0 flex flex-col items-center justify-center gap-1.5 bg-[var(--background)] border border-[var(--border)] rounded-lg p-3">
+          <span class="text-xs font-medium text-[var(--muted-foreground)]">サンプル展開図（完成状態）</span>
+          <canvas id="sampleCubeNet" width="174" height="131" class="block"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 3x3x3 Cube Simulator & Scramble Generator
+    // ==========================================
+    const FACES = ["U", "R", "F", "D", "L", "B"];
+    const AXIS = { U: 0, D: 0, R: 1, L: 1, F: 2, B: 2 };
+    const MODS = ["", "'", "2"];
+    const FACE_MAP = { U: 0, R: 1, F: 2, D: 3, L: 4, B: 5 };
+    const DEFAULT_COLORS = {
+      W: "#f8fafc",
+      Y: "#feec62",
+      G: "#1eb355",
+      B: "#0a56d1",
+      R: "#f65151",
+      O: "#ff9d4d",
+      BASE: "#1e293b"
+    };
+    const COLOR_META = [
+      { key: "W", label: "U (上 / 白)" },
+      { key: "Y", label: "D (下 / 黄)" },
+      { key: "G", label: "F (前 / 緑)" },
+      { key: "B", label: "B (後 / 青)" },
+      { key: "R", label: "R (右 / 赤)" },
+      { key: "O", label: "L (左 / 橙)" },
+      { key: "BASE", label: "素体 / 枠" }
+    ];
+    let COLOR_HEX = { ...DEFAULT_COLORS };
+
+    function createSolvedCube() {
+      return [
+        Array(9).fill("W"), // U
+        Array(9).fill("R"), // R
+        Array(9).fill("G"), // F
+        Array(9).fill("Y"), // D
+        Array(9).fill("O"), // L
+        Array(9).fill("B")  // B
+      ];
+    }
+
+    function rotateFaceCW(f) {
+      return [f[6], f[3], f[0], f[7], f[4], f[1], f[8], f[5], f[2]];
+    }
+
+    function cycle4(c, a, b, d, e) {
+      const tmp = [c[e[0]][e[1]], c[e[0]][e[2]], c[e[0]][e[3]]];
+      for (let k = 0; k < 3; k++) c[e[0]][e[k + 1]] = c[d[0]][d[k + 1]];
+      for (let k = 0; k < 3; k++) c[d[0]][d[k + 1]] = c[b[0]][b[k + 1]];
+      for (let k = 0; k < 3; k++) c[b[0]][b[k + 1]] = c[a[0]][a[k + 1]];
+      for (let k = 0; k < 3; k++) c[a[0]][a[k + 1]] = tmp[k];
+    }
+
+    function moveOnce(c, face) {
+      c[face] = rotateFaceCW(c[face]);
+      if (face === 0) {
+        cycle4(c, [2, 0, 1, 2], [4, 0, 1, 2], [5, 0, 1, 2], [1, 0, 1, 2]);
+      } else if (face === 3) {
+        cycle4(c, [2, 6, 7, 8], [1, 6, 7, 8], [5, 6, 7, 8], [4, 6, 7, 8]);
+      } else if (face === 2) {
+        cycle4(c, [0, 6, 7, 8], [1, 0, 3, 6], [3, 2, 1, 0], [4, 8, 5, 2]);
+      } else if (face === 5) {
+        cycle4(c, [0, 2, 1, 0], [4, 0, 3, 6], [3, 6, 7, 8], [1, 8, 5, 2]);
+      } else if (face === 1) {
+        cycle4(c, [0, 8, 5, 2], [5, 0, 3, 6], [3, 8, 5, 2], [2, 8, 5, 2]);
+      } else if (face === 4) {
+        cycle4(c, [0, 0, 3, 6], [2, 0, 3, 6], [3, 0, 3, 6], [5, 8, 5, 2]);
+      }
+    }
+
+    function applyAlgorithm(alg) {
+      const c = createSolvedCube();
+      for (const tok of alg.trim().split(/\s+/)) {
+        if (!tok) continue;
+        const f = FACE_MAP[tok[0]];
+        const n = tok.endsWith("2") ? 2 : tok.endsWith("'") ? 3 : 1;
+        for (let i = 0; i < n; i++) moveOnce(c, f);
+      }
+      return c;
+    }
+
+    function generateRawScramble(length) {
+      const moves = [];
+      let lastFace = null;
+      let lastAxis = null;
+      let secondLastAxis = null;
+
+      while (moves.length < length) {
+        const f = FACES[Math.floor(Math.random() * FACES.length)];
+        const ax = AXIS[f];
+        if (f === lastFace) continue;
+        if (ax === lastAxis && ax === secondLastAxis) continue;
+
+        const mod = MODS[Math.floor(Math.random() * MODS.length)];
+        moves.push(f + mod);
+        secondLastAxis = lastAxis;
+        lastAxis = ax;
+        lastFace = f;
+      }
+      return moves.join(" ");
+    }
+
+    function countYellowCrossEdges(cube) {
+      return [1, 3, 5, 7].filter((idx) => cube[3][idx] === "Y").length;
+    }
+
+    function countExactSolvedCrossEdges(cube) {
+      const pairs = [
+        [1, 2, 7, "G"],
+        [5, 1, 7, "R"],
+        [7, 5, 7, "B"],
+        [3, 4, 7, "O"]
+      ];
+      let cnt = 0;
+      for (const [dIdx, adjFace, adjIdx, adjCol] of pairs) {
+        if (cube[3][dIdx] === "Y" && cube[adjFace][adjIdx] === adjCol) {
+          cnt++;
+        }
+      }
+      return cnt;
+    }
+
+    function generateScramble(length, mode = "standard") {
+      for (let attempt = 0; attempt < 2000; attempt++) {
+        const alg = generateRawScramble(length);
+        const cube = applyAlgorithm(alg);
+        if (mode === "exact1") {
+          if (countExactSolvedCrossEdges(cube) === 1) return alg;
+        } else {
+          if (countYellowCrossEdges(cube) <= 1) return alg;
+        }
+      }
+      return generateRawScramble(length);
+    }
+
+    function drawCubeNetToCanvas(canvasId, alg) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const cube = alg ? applyAlgorithm(alg) : createSolvedCube();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid: 4x3 faces -> U at (1,0), L at (0,1), F at (1,1), R at (2,1), B at (3,1), D at (1,2)
+      const layout = [
+        { face: 0, gx: 1, gy: 0 },
+        { face: 4, gx: 0, gy: 1 },
+        { face: 2, gx: 1, gy: 1 },
+        { face: 1, gx: 2, gy: 1 },
+        { face: 5, gx: 3, gy: 1 },
+        { face: 3, gx: 1, gy: 2 }
+      ];
+
+      const cell = 11;
+      const stickerGap = 2;
+      const pad = 2;
+      const faceSize = pad * 2 + cell * 3 + stickerGap * 2; // 41
+      const faceGap = 2;
+
+      for (const item of layout) {
+        const ox = item.gx * (faceSize + faceGap) + 1;
+        const oy = item.gy * (faceSize + faceGap) + 1;
+
+        ctx.fillStyle = COLOR_HEX.BASE || "#1e293b";
+        ctx.fillRect(ox, oy, faceSize, faceSize);
+
+        for (let i = 0; i < 9; i++) {
+          const r = Math.floor(i / 3);
+          const col = i % 3;
+          const x = ox + pad + col * (cell + stickerGap);
+          const y = oy + pad + r * (cell + stickerGap);
+          ctx.fillStyle = COLOR_HEX[cube[item.face][i]];
+          ctx.fillRect(x, y, cell, cell);
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(x, y, cell, cell);
+        }
+      }
+    }
+
+    function drawCubeNet(alg) {
+      drawCubeNetToCanvas("cubeNet", alg);
+    }
+
+    function drawAllNets() {
+      drawCubeNetToCanvas("cubeNet", currentScramble);
+      drawCubeNetToCanvas("sampleCubeNet", "");
+    }
+
+    // ==========================================
+    // 2. Audio Feedback (Web Audio API)
+    // ==========================================
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function playBeep(freq = 880, duration = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (_) {}
+    }
+
+    // ==========================================
+    // 3. State & Timer Logic
+    // ==========================================
+    // States: IDLE | INSPECTION | READY | RUNNING | STOPPED
+    let state = "IDLE";
+    let currentScramble = "";
+    let inspectionStart = 0;
+    let lastInspectionMs = 0;
+    let solveStart = 0;
+    let rafId = null;
+    const inspectionBeeps = new Set();
+    let inspectionPenalty = "OK"; // OK | +2 | DNF
+    let justStopped = false;
+    let solvesBySession = {};
+    let solves = [];
+
+    const STORAGE_KEY = "cfop_cross_timer_solves_v2";
+    const LEGACY_STORAGE_KEY = "cfop_cross_timer_solves_v1";
+    const SETTINGS_KEY = "cfop_cross_timer_settings_v1";
+
+    const SCRAMBLE_LENGTH = 12;
+    let showNet = false;
+
+    // DOM Elements
+    const inspectionModeEl = document.getElementById("inspectionMode");
+    const centerAlignModeEl = document.getElementById("centerAlignMode");
+    const soundToggleEl = document.getElementById("soundToggle");
+    const netToggleEl = document.getElementById("netToggle");
+    const chartCardEl = document.getElementById("chartCard");
+    const netCardEl = document.getElementById("netCard");
+    const scrambleBadgeEl = document.getElementById("scrambleBadge");
+    const scrambleTextEl = document.getElementById("scrambleText");
+    const nextScrambleBtn = document.getElementById("nextScrambleBtn");
+    const timerAreaEl = document.getElementById("timerArea");
+    const stateLabelEl = document.getElementById("stateLabel");
+    const timerDisplayEl = document.getElementById("timerDisplay");
+    const inspectionSubEl = document.getElementById("inspectionSub");
+    const timerHintEl = document.getElementById("timerHint");
+    const quickActionsEl = document.getElementById("quickActions");
+    const sessionModeBadgeEl = document.getElementById("sessionModeBadge");
+
+    function applyNetVisibility() {
+      netToggleEl.textContent = showNet ? "展開図: ON" : "展開図: OFF";
+      if (showNet) {
+        netCardEl.classList.remove("hidden");
+        chartCardEl.classList.remove("sm:col-span-12");
+        chartCardEl.classList.add("sm:col-span-7");
+        drawCubeNet(currentScramble);
+      } else {
+        netCardEl.classList.add("hidden");
+        chartCardEl.classList.remove("sm:col-span-7");
+        chartCardEl.classList.add("sm:col-span-12");
+      }
+    }
+
+    function readWindowNameStore() {
+      try {
+        if (window.name && window.name.startsWith("CFOP_CROSS_STORE:")) {
+          return JSON.parse(window.name.slice("CFOP_CROSS_STORE:".length));
+        }
+      } catch (_) {}
+      return {};
+    }
+
+    function writeWindowNameStore(store) {
+      try {
+        window.name = "CFOP_CROSS_STORE:" + JSON.stringify(store);
+      } catch (_) {}
+    }
+
+    function storageGet(key) {
+      try {
+        const val = localStorage.getItem(key);
+        if (val !== null) return val;
+      } catch (_) {}
+      const store = readWindowNameStore();
+      return key in store ? JSON.stringify(store[key]) : null;
+    }
+
+    function storageSet(key, obj) {
+      const json = JSON.stringify(obj);
+      try { localStorage.setItem(key, json); } catch (_) {}
+      const store = readWindowNameStore();
+      store[key] = obj;
+      writeWindowNameStore(store);
+    }
+
+    const uiThemeSelectEl = document.getElementById("uiThemeSelect");
+    const crossDifficultyEl = document.getElementById("crossDifficulty");
+
+    function applyUiTheme(themeName) {
+      document.body.setAttribute("data-ui-theme", themeName);
+    }
+
+    function getSessionKey() {
+      return `${crossDifficultyEl.value}|${inspectionModeEl.value}|${centerAlignModeEl.value}`;
+    }
+
+    function syncActiveSolves() {
+      const key = getSessionKey();
+      if (!Array.isArray(solvesBySession[key])) {
+        solvesBySession[key] = [];
+      }
+      solves = solvesBySession[key];
+    }
+
+    function updateSessionBadge() {
+      if (!sessionModeBadgeEl) return;
+      const diffLabel = crossDifficultyEl.value === "exact1" ? "1個揃い" : "標準";
+      const inspLabel = inspectionModeEl.value === "wca" ? "15秒" : "無制限";
+      const alignLabel = centerAlignModeEl.value === "without" ? "センターなし" : "センターあり";
+      sessionModeBadgeEl.textContent = `${diffLabel} / ${inspLabel} / ${alignLabel}`;
+    }
+
+    function switchSession() {
+      window.expandedSolveIndex = null;
+      syncActiveSolves();
+      updateSessionBadge();
+      if (state === "STOPPED") {
+        cancelTimer();
+      }
+      renderStatsAndHistory();
+    }
+
+    function loadData() {
+      try {
+        const s = JSON.parse(storageGet(SETTINGS_KEY) || "{}");
+        if (s.uiTheme && ["cstimer-blue", "cstimer-warm", "cstimer-dark"].includes(s.uiTheme)) {
+          uiThemeSelectEl.value = s.uiTheme;
+          applyUiTheme(s.uiTheme);
+        }
+        if (s.crossDifficulty && ["standard", "exact1"].includes(s.crossDifficulty)) {
+          crossDifficultyEl.value = s.crossDifficulty;
+        }
+        if (s.inspectionMode && ["free", "wca"].includes(s.inspectionMode)) {
+          inspectionModeEl.value = s.inspectionMode;
+        }
+        if (s.centerAlignMode && ["with", "without"].includes(s.centerAlignMode)) {
+          centerAlignModeEl.value = s.centerAlignMode;
+        }
+        if (typeof s.soundEnabled === "boolean") {
+          soundEnabled = s.soundEnabled;
+          soundToggleEl.textContent = soundEnabled ? "🔊 音: ON" : "🔇 音: OFF";
+        }
+        if (typeof s.showNet === "boolean") {
+          showNet = s.showNet;
+        }
+      } catch (_) {}
+
+      try {
+        const raw = storageGet(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            solvesBySession = parsed;
+          }
+        } else {
+          const legacyRaw = storageGet(LEGACY_STORAGE_KEY);
+          if (legacyRaw) {
+            const legacy = JSON.parse(legacyRaw);
+            if (Array.isArray(legacy) && legacy.length > 0) {
+              solvesBySession["standard|free|with"] = legacy;
+            }
+          }
+        }
+      } catch (_) { solvesBySession = {}; }
+
+      syncActiveSolves();
+      updateSessionBadge();
+      applyNetVisibility();
+    }
+
+    function saveSolves() {
+      solvesBySession[getSessionKey()] = solves;
+      storageSet(STORAGE_KEY, solvesBySession);
+    }
+
+    function saveSettings() {
+      storageSet(SETTINGS_KEY, {
+        uiTheme: uiThemeSelectEl.value,
+        crossDifficulty: crossDifficultyEl.value,
+        inspectionMode: inspectionModeEl.value,
+        centerAlignMode: centerAlignModeEl.value,
+        soundEnabled,
+        showNet
+      });
+    }
+
+    function refreshScramble() {
+      const mode = crossDifficultyEl.value;
+      const badgeMap = {
+        standard: "Cross練習 12手 (黄1以下)",
+        exact1: "Cross練習 12手 (1個揃い)"
+      };
+      scrambleBadgeEl.textContent = badgeMap[mode] || "Cross練習 12手";
+      currentScramble = generateScramble(SCRAMBLE_LENGTH, mode);
+      scrambleTextEl.textContent = currentScramble;
+      drawCubeNet(currentScramble);
+    }
+
+    function formatTime(ms) {
+      if (ms === Infinity || ms == null) return "DNF";
+      const sec = ms / 1000;
+      if (sec >= 60) {
+        const m = Math.floor(sec / 60);
+        const rem = (sec % 60).toFixed(2).padStart(5, "0");
+        return `${m}:${rem}`;
+      }
+      return sec.toFixed(2);
+    }
+
+    function getEffectiveMs(solve) {
+      if (solve.penalty === "DNF") return Infinity;
+      if (solve.penalty === "+2") return solve.timeMs + 2000;
+      return solve.timeMs;
+    }
+
+    function formatSolve(solve) {
+      if (solve.penalty === "DNF") return "DNF";
+      if (solve.penalty === "+2") return formatTime(solve.timeMs + 2000) + "+";
+      return formatTime(solve.timeMs);
+    }
+
+    function setTimerVisual(mode) {
+      timerDisplayEl.className = "font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none my-1";
+      if (mode === "IDLE") {
+        stateLabelEl.textContent = "待機中";
+        timerHintEl.textContent = "Spaceを押して離すとインスペクション開始（タップ操作も可）";
+        inspectionSubEl.textContent = "";
+      } else if (mode === "INSPECTION_READY") {
+        stateLabelEl.textContent = "インスペクション待機";
+        timerDisplayEl.classList.add("text-[var(--warning)]");
+        timerHintEl.textContent = "Spaceを離すとインスペクション開始！";
+        inspectionSubEl.textContent = "";
+      } else if (mode === "INSPECTION") {
+        stateLabelEl.textContent = "インスペクション中";
+        timerDisplayEl.classList.add("text-[var(--warning)]");
+        timerHintEl.textContent = "Spaceをもう1回押して離すとソルブ開始（Escでキャンセル）";
+      } else if (mode === "READY") {
+        stateLabelEl.textContent = "準備完了";
+        timerDisplayEl.classList.add("text-[var(--success)]");
+        timerHintEl.textContent = "Spaceを離すとソルブ開始！";
+      } else if (mode === "RUNNING") {
+        stateLabelEl.textContent = "計測中";
+        timerHintEl.textContent = "任意のキーを押してストップ";
+        inspectionSubEl.textContent = "";
+      } else if (mode === "STOPPED") {
+        stateLabelEl.textContent = "計測完了";
+        timerHintEl.textContent = "Spaceを押して離すと次のインスペクション開始";
+      }
+    }
+
+    function enterInspectionReady() {
+      state = "INSPECTION_READY";
+      quickActionsEl.classList.add("opacity-0", "pointer-events-none");
+      setTimerVisual("INSPECTION_READY");
+    }
+
+    function startInspection() {
+      state = "INSPECTION";
+      inspectionStart = performance.now();
+      inspectionBeeps.clear();
+      inspectionPenalty = "OK";
+      quickActionsEl.classList.add("opacity-0", "pointer-events-none");
+      setTimerVisual("INSPECTION");
+
+      const tick = () => {
+        if (state !== "INSPECTION" && state !== "READY") return;
+        const elapsed = (performance.now() - inspectionStart) / 1000;
+
+        if (inspectionModeEl.value === "wca") {
+          const rem = 15 - elapsed;
+          for (const sec of [5, 10]) {
+            if (elapsed >= sec && !inspectionBeeps.has(sec)) {
+              inspectionBeeps.add(sec);
+              playBeep(660, 0.08);
+            }
+          }
+          for (const sec of [12, 13, 14]) {
+            if (elapsed >= sec && !inspectionBeeps.has(sec)) {
+              inspectionBeeps.add(sec);
+              playBeep(880, 0.10);
+            }
+          }
+
+          if (rem > 0) {
+            timerDisplayEl.textContent = Math.ceil(rem).toString();
+            inspectionPenalty = "OK";
+            if (state === "INSPECTION" && rem <= 3) {
+              timerDisplayEl.classList.remove("text-[var(--warning)]");
+              timerDisplayEl.classList.add("text-[var(--error)]");
+            }
+          } else if (elapsed < 17) {
+            timerDisplayEl.textContent = "+2";
+            inspectionPenalty = "+2";
+            if (state === "INSPECTION") {
+              timerDisplayEl.classList.remove("text-[var(--warning)]");
+              timerDisplayEl.classList.add("text-[var(--error)]");
+            }
+          } else {
+            timerDisplayEl.textContent = "DNF";
+            inspectionPenalty = "DNF";
+          }
+          inspectionSubEl.textContent = `経過: ${elapsed.toFixed(1)}s`;
+        } else {
+          timerDisplayEl.textContent = elapsed.toFixed(1);
+          inspectionPenalty = "OK";
+          inspectionSubEl.textContent = "無制限インスペクション";
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function enterReady() {
+      state = "READY";
+      setTimerVisual("READY");
+    }
+
+    function startSolve() {
+      if (rafId) cancelAnimationFrame(rafId);
+      const now = performance.now();
+      lastInspectionMs = Math.max(0, Math.round(now - inspectionStart));
+      if (inspectionModeEl.value === "wca") {
+        const inspSec = lastInspectionMs / 1000;
+        inspectionPenalty = inspSec >= 17 ? "DNF" : inspSec >= 15 ? "+2" : "OK";
+      } else {
+        inspectionPenalty = "OK";
+      }
+
+      state = "RUNNING";
+      solveStart = now;
+      setTimerVisual("RUNNING");
+
+      const tick = () => {
+        if (state !== "RUNNING") return;
+        const elapsed = performance.now() - solveStart;
+        timerDisplayEl.textContent = formatTime(elapsed);
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function stopSolve() {
+      if (rafId) cancelAnimationFrame(rafId);
+      const rawMs = Math.max(10, Math.round(performance.now() - solveStart));
+      state = "STOPPED";
+
+      const solve = {
+        id: Date.now(),
+        timeMs: rawMs,
+        inspectionMs: lastInspectionMs,
+        penalty: inspectionPenalty,
+        scramble: currentScramble,
+        mode: String(SCRAMBLE_LENGTH)
+      };
+      solves.push(solve);
+      saveSolves();
+
+      timerDisplayEl.textContent = formatSolve(solve);
+      if (solve.penalty === "DNF") timerDisplayEl.classList.add("text-[var(--error)]");
+      else if (solve.penalty === "+2") timerDisplayEl.classList.add("text-[var(--warning)]");
+
+      setTimerVisual("STOPPED");
+      inspectionSubEl.textContent = `インスペクション: ${(lastInspectionMs / 1000).toFixed(2)}s`;
+      quickActionsEl.classList.remove("opacity-0", "pointer-events-none");
+
+      refreshScramble();
+      renderStatsAndHistory();
+    }
+
+    function cancelTimer() {
+      if (rafId) cancelAnimationFrame(rafId);
+      state = "IDLE";
+      timerDisplayEl.textContent = "0.00";
+      setTimerVisual("IDLE");
+    }
+
+    // Keyboard Controls:
+    // 1st Space press (IDLE/STOPPED) -> INSPECTION_READY
+    // 1st Space release (INSPECTION_READY) -> INSPECTION
+    // 2nd Space press (INSPECTION) -> READY (ends inspection)
+    // 2nd Space release (READY) -> RUNNING (starts solve)
+    // Any key press (RUNNING) -> STOPPED
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" && e.target.type === "text") {
+        return;
+      }
+      if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") {
+        if (e.code === "Space") e.target.blur();
+        else return;
+      }
+
+      if (e.code === "Space") e.preventDefault();
+      if (e.repeat) return;
+
+      if (e.code === "Escape") {
+        if (state === "INSPECTION_READY" || state === "INSPECTION" || state === "READY" || state === "RUNNING") {
+          cancelTimer();
+        }
+        return;
+      }
+
+      if (e.code === "KeyN" && (state === "IDLE" || state === "STOPPED")) {
+        refreshScramble();
+        return;
+      }
+
+      if (state === "RUNNING") {
+        justStopped = true;
+        stopSolve();
+        return;
+      }
+
+      if (e.code === "Space") {
+        if (justStopped) return;
+        if (state === "IDLE" || state === "STOPPED") {
+          enterInspectionReady();
+        } else if (state === "INSPECTION") {
+          enterReady();
+        }
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (justStopped) {
+        justStopped = false;
+        return;
+      }
+      if (e.code === "Space") {
+        if (state === "INSPECTION_READY") {
+          startInspection();
+        } else if (state === "READY") {
+          startSolve();
+        }
+      }
+    });
+
+    // Pointer / Touch Support on Timer Area
+    timerAreaEl.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      if (state === "RUNNING") {
+        justStopped = true;
+        stopSolve();
+      } else if (state === "IDLE" || state === "STOPPED") {
+        enterInspectionReady();
+      } else if (state === "INSPECTION") {
+        enterReady();
+      }
+    });
+
+    timerAreaEl.addEventListener("pointerup", (e) => {
+      if (e.target.closest("button")) return;
+      if (justStopped) {
+        justStopped = false;
+        return;
+      }
+      if (state === "INSPECTION_READY") {
+        startInspection();
+      } else if (state === "READY") {
+        startSolve();
+      }
+    });
+
+    // ==========================================
+    // 4. Statistics & Rendering
+    // ==========================================
+    function calcAverage(slice) {
+      if (slice.length < 3) return null;
+      const trim = slice.length >= 20 ? Math.ceil(slice.length * 0.05) : 1;
+      const vals = slice.map(getEffectiveMs);
+      const dnfCount = vals.filter((v) => v === Infinity).length;
+      if (dnfCount > trim) return Infinity;
+      const sorted = [...vals].sort((a, b) => a - b);
+      const trimmed = sorted.slice(trim, sorted.length - trim);
+      const sum = trimmed.reduce((acc, v) => acc + v, 0);
+      return sum / trimmed.length;
+    }
+
+    let metricMode = "inspection"; // "inspection" | "solve"
+    const statModeToggleEl = document.getElementById("statModeToggle");
+    const chartModeToggleEl = document.getElementById("chartModeToggle");
+    const statSubMeanLabelEl = document.getElementById("statSubMeanLabel");
+
+    function updateMetricModeLabels() {
+      const label = metricMode === "inspection" ? "インスペクション" : "ソルブ";
+      if (statModeToggleEl) statModeToggleEl.textContent = `対象: ${label}`;
+      if (chartModeToggleEl) chartModeToggleEl.textContent = `表示: ${label}`;
+      if (statSubMeanLabelEl) {
+        statSubMeanLabelEl.textContent = metricMode === "inspection" ? "Mean Solve" : "Mean Insp.";
+      }
+    }
+
+    function toggleMetricMode(e) {
+      if (e && e.target) e.target.blur();
+      metricMode = metricMode === "inspection" ? "solve" : "inspection";
+      updateMetricModeLabels();
+      renderStatsAndHistory();
+    }
+
+    function syncDefaultMetricMode() {
+      metricMode = inspectionModeEl.value === "wca" ? "solve" : "inspection";
+      updateMetricModeLabels();
+    }
+
+    if (statModeToggleEl) statModeToggleEl.addEventListener("click", toggleMetricMode);
+    if (chartModeToggleEl) chartModeToggleEl.addEventListener("click", toggleMetricMode);
+
+    function calcInspectionAverage(slice) {
+      if (slice.length < 3) return null;
+      const trim = slice.length >= 20 ? Math.ceil(slice.length * 0.05) : 1;
+      const vals = slice.map((s) => s.inspectionMs).filter((v) => typeof v === "number");
+      if (vals.length < slice.length) return null;
+      const sorted = [...vals].sort((a, b) => a - b);
+      const trimmed = sorted.slice(trim, sorted.length - trim);
+      return trimmed.reduce((acc, v) => acc + v, 0) / trimmed.length;
+    }
+
+    function renderStatsAndHistory() {
+      const validSolves = solves.map(getEffectiveMs).filter((v) => v !== Infinity);
+      const inspTimes = solves.map((s) => s.inspectionMs).filter((v) => typeof v === "number");
+      document.getElementById("statCount").textContent = `${validSolves.length} / ${solves.length}`;
+
+      const targetTimes = metricMode === "inspection" ? inspTimes : validSolves;
+      if (targetTimes.length > 0) {
+        const best = Math.min(...targetTimes);
+        const mean = targetTimes.reduce((a, b) => a + b, 0) / targetTimes.length;
+        document.getElementById("statBest").textContent = formatTime(best);
+        document.getElementById("statMean").textContent = formatTime(mean);
+      } else {
+        document.getElementById("statBest").textContent = "-";
+        document.getElementById("statMean").textContent = "-";
+      }
+
+      const subTimes = metricMode === "inspection" ? validSolves : inspTimes;
+      if (subTimes.length > 0) {
+        const subMean = subTimes.reduce((a, b) => a + b, 0) / subTimes.length;
+        document.getElementById("statInspMean").textContent = formatTime(subMean);
+      } else {
+        document.getElementById("statInspMean").textContent = "-";
+      }
+
+      const calcFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
+      const ao5 = solves.length >= 5 ? calcFn(solves.slice(-5)) : null;
+      const ao12 = solves.length >= 12 ? calcFn(solves.slice(-12)) : null;
+      document.getElementById("statAo5").textContent = ao5 === null ? "-" : formatTime(ao5);
+      document.getElementById("statAo12").textContent = ao12 === null ? "-" : formatTime(ao12);
+
+      // History table (latest first)
+      const tbody = document.getElementById("historyBody");
+      if (solves.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-[var(--muted-foreground)]">まだ記録がありません</td></tr>`;
+      } else {
+        const rows = [];
+        for (let i = solves.length - 1; i >= 0; i--) {
+          const s = solves[i];
+          const rowAo5Val = i >= 4 ? calcFn(solves.slice(i - 4, i + 1)) : null;
+          const rowAo5 = rowAo5Val === null ? "-" : formatTime(rowAo5Val);
+          const inspStr = typeof s.inspectionMs === "number" ? `${(s.inspectionMs / 1000).toFixed(1)}s` : "-";
+          const penClass = s.penalty === "DNF" ? "text-[var(--error)]" : s.penalty === "+2" ? "text-[var(--warning)]" : "";
+          const isOpen = window.expandedSolveIndex === i;
+          rows.push(`
+            <tr onclick="toggleSolveDetail(${i})" class="hover:bg-[var(--background)]/60 cursor-pointer ${isOpen ? 'bg-[var(--background)]/60' : ''}" title="クリックでスクランブルを表示">
+              <td class="py-1 px-2 text-[var(--muted-foreground)] font-mono">${i + 1}</td>
+              <td class="py-1 px-1.5 font-mono font-semibold tabular-nums ${penClass}">${formatSolve(s)}</td>
+              <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${inspStr}</td>
+              <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${rowAo5}</td>
+              <td class="py-1 px-1.5 text-right whitespace-nowrap space-x-0.5 text-[10px]">
+                <button onclick="event.stopPropagation(); setPenalty(${i}, '+2')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${s.penalty==='+2'?'bg-[var(--secondary)] font-bold':''}" title="+2">+2</button>
+                <button onclick="event.stopPropagation(); setPenalty(${i}, 'DNF')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${s.penalty==='DNF'?'bg-[var(--secondary)] font-bold':''}" title="DNF">DNF</button>
+                <button onclick="event.stopPropagation(); deleteSolve(${i})" class="px-1 py-0.5 rounded text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer" title="削除">×</button>
+              </td>
+            </tr>
+          `);
+          if (isOpen) {
+            rows.push(`
+              <tr class="bg-[var(--background)]/90">
+                <td colspan="5" class="px-2.5 py-1.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-mono text-[11px] text-[var(--foreground)] select-all break-all">${s.scramble || "-"}</span>
+                    <button onclick="event.stopPropagation(); copyScramble(${i}, this)" class="shrink-0 text-[10px] px-1.5 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">コピー</button>
+                  </div>
+                </td>
+              </tr>
+            `);
+          }
+        }
+        tbody.innerHTML = rows.join("");
+      }
+
+      renderChart();
+    }
+
+    window.expandedSolveIndex = null;
+    window.toggleSolveDetail = function(index) {
+      window.expandedSolveIndex = window.expandedSolveIndex === index ? null : index;
+      renderStatsAndHistory();
+    };
+
+    window.copyScramble = function(index, btn) {
+      const s = solves[index];
+      if (!s || !s.scramble) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(s.scramble).then(() => {
+          btn.textContent = "OK!";
+          setTimeout(() => { btn.textContent = "コピー"; }, 1000);
+        }).catch(() => {});
+      }
+    };
+
+    let chartView = "avg"; // "avg" | "dist"
+    const chartViewToggleEl = document.getElementById("chartViewToggle");
+    const chartLegendEl = document.getElementById("chartLegend");
+
+    function updateChartHeader() {
+      if (chartViewToggleEl) {
+        chartViewToggleEl.textContent = chartView === "avg" ? "推移: Ao5/12/50" : "分布: タイム帯";
+      }
+      if (chartLegendEl) {
+        if (chartView === "avg") {
+          chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">― Ao5</span><span class="text-[var(--chart-2)]">― Ao12</span><span class="text-[var(--success)]">― Ao50</span>`;
+        } else {
+          chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">■ 全体</span><span class="text-[var(--chart-2)]">■ 直近12回</span>`;
+        }
+      }
+    }
+
+    if (chartViewToggleEl) {
+      chartViewToggleEl.addEventListener("click", (e) => {
+        e.target.blur();
+        chartView = chartView === "avg" ? "dist" : "avg";
+        updateChartHeader();
+        renderChart();
+      });
+    }
+
+    function renderChart() {
+      updateChartHeader();
+      if (chartView === "dist") {
+        renderDistChart();
+      } else {
+        renderAvgTrendChart();
+      }
+    }
+
+    function renderAvgTrendChart() {
+      const svg = document.getElementById("trendChart");
+      const calcFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
+
+      const ao5Pts = [];
+      const ao12Pts = [];
+      const ao50Pts = [];
+      for (let i = 4; i < solves.length; i++) {
+        const a5 = calcFn(solves.slice(i - 4, i + 1));
+        if (a5 !== null && a5 !== Infinity) ao5Pts.push({ idx: i, val: a5 });
+        if (i >= 11) {
+          const a12 = calcFn(solves.slice(i - 11, i + 1));
+          if (a12 !== null && a12 !== Infinity) ao12Pts.push({ idx: i, val: a12 });
+        }
+        if (i >= 49) {
+          const a50 = calcFn(solves.slice(i - 49, i + 1));
+          if (a50 !== null && a50 !== Infinity) ao50Pts.push({ idx: i, val: a50 });
+        }
+      }
+
+      if (ao5Pts.length < 2) {
+        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">6回以上記録すると Ao5 / Ao12 / Ao50 推移が表示されます</text>`;
+        return;
+      }
+
+      const W = 360, H = 120, padL = 34, padR = 10, padT = 8, padB = 14;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      const allVals = [
+        ...ao5Pts.map((p) => p.val),
+        ...ao12Pts.map((p) => p.val),
+        ...ao50Pts.map((p) => p.val)
+      ];
+      const minV = Math.min(...allVals);
+      const maxV = Math.max(...allVals);
+
+      const stepCandidates = [200, 500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
+      const rawSpan = Math.max(400, maxV - minV);
+      const targetStep = rawSpan / 3;
+      const step = stepCandidates.find((c) => c >= targetStep) || Math.ceil(targetStep / 60000) * 60000;
+      const yMin = Math.max(0, Math.floor(minV / step) * step);
+      let yMax = Math.ceil(maxV / step) * step;
+      if (yMax <= yMin) yMax = yMin + step;
+
+      const minIdx = ao5Pts[0].idx;
+      const maxIdx = ao5Pts[ao5Pts.length - 1].idx;
+      const idxSpan = Math.max(1, maxIdx - minIdx);
+      const xOf = (i) => padL + ((i - minIdx) / idxSpan) * plotW;
+      const yOf = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+      let html = "";
+      for (let v = yMin; v <= yMax + 1e-6; v += step) {
+        const y = yOf(v);
+        const label = step < 1000 ? `${(v / 1000).toFixed(1)}s` : `${Math.round(v / 1000)}s`;
+        html += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-dasharray="3 3" stroke-width="1" />`;
+        html += `<text x="${padL - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">${label}</text>`;
+      }
+
+      html += `<text x="${padL}" y="${H - 2}" text-anchor="start" fill="var(--muted-foreground)" font-size="9">#${minIdx + 1}</text>`;
+      html += `<text x="${W - padR}" y="${H - 2}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">#${maxIdx + 1}</text>`;
+
+      // Ao5 line
+      const ao5Path = ao5Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+      html += `<path d="${ao5Path}" fill="none" stroke="var(--chart-1)" stroke-width="2" />`;
+      for (const p of ao5Pts) {
+        html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="2" fill="var(--chart-1)" />`;
+      }
+
+      // Ao12 line
+      if (ao12Pts.length >= 2) {
+        const ao12Path = ao12Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+        html += `<path d="${ao12Path}" fill="none" stroke="var(--chart-2)" stroke-width="2.5" />`;
+      } else if (ao12Pts.length === 1) {
+        html += `<circle cx="${xOf(ao12Pts[0].idx).toFixed(1)}" cy="${yOf(ao12Pts[0].val).toFixed(1)}" r="2.5" fill="var(--chart-2)" />`;
+      }
+
+      // Ao50 line
+      if (ao50Pts.length >= 2) {
+        const ao50Path = ao50Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+        html += `<path d="${ao50Path}" fill="none" stroke="var(--success)" stroke-width="2.5" />`;
+      } else if (ao50Pts.length === 1) {
+        html += `<circle cx="${xOf(ao50Pts[0].idx).toFixed(1)}" cy="${yOf(ao50Pts[0].val).toFixed(1)}" r="2.5" fill="var(--success)" />`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    function renderDistChart() {
+      const svg = document.getElementById("trendChart");
+      const pts = solves
+        .map((s, idx) => ({
+          idx,
+          val: metricMode === "inspection"
+            ? (typeof s.inspectionMs === "number" ? s.inspectionMs : Infinity)
+            : getEffectiveMs(s)
+        }))
+        .filter((p) => p.val !== Infinity);
+
+      if (pts.length < 2) {
+        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">2回以上記録するとタイム分布が表示されます</text>`;
+        return;
+      }
+
+      const vals = pts.map((p) => p.val);
+      const minV = Math.min(...vals);
+      const maxV = Math.max(...vals);
+
+      const binSteps = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000];
+      let binStep = binSteps.find((s) => {
+        const lo = Math.floor(minV / s) * s;
+        const hi = Math.floor(maxV / s) * s + s;
+        return (hi - lo) / s <= 7;
+      }) || 30000;
+
+      const loBound = Math.floor(minV / binStep) * binStep;
+      let hiBound = Math.floor(maxV / binStep) * binStep + binStep;
+      const numBins = Math.max(2, Math.round((hiBound - loBound) / binStep));
+
+      const allCounts = Array(numBins).fill(0);
+      const recentCounts = Array(numBins).fill(0);
+      const recentStartIdx = Math.max(0, solves.length - 12);
+
+      for (const p of pts) {
+        let b = Math.floor((p.val - loBound) / binStep);
+        if (b < 0) b = 0;
+        if (b >= numBins) b = numBins - 1;
+        allCounts[b]++;
+        if (p.idx >= recentStartIdx) {
+          recentCounts[b]++;
+        }
+      }
+
+      const maxCount = Math.max(1, ...allCounts);
+      const W = 360, H = 120, padL = 26, padR = 8, padT = 14, padB = 18;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      let html = "";
+      // Horizontal baseline & top guide
+      html += `<line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="var(--border)" stroke-width="1" />`;
+      html += `<line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border)" stroke-dasharray="3 3" stroke-width="1" />`;
+      html += `<text x="${padL - 4}" y="${padT + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">${maxCount}</text>`;
+      html += `<text x="${padL - 4}" y="${padT + plotH + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">0</text>`;
+
+      const slotW = plotW / numBins;
+      const barW = Math.min(34, slotW * 0.68);
+      const showRecent = solves.length >= 12;
+
+      for (let b = 0; b < numBins; b++) {
+        const cx = padL + (b + 0.5) * slotW;
+        const bx = cx - barW / 2;
+        const cAll = allCounts[b];
+        const cRec = recentCounts[b];
+
+        const hAll = (cAll / maxCount) * plotH;
+        const yAll = padT + plotH - hAll;
+        if (cAll > 0) {
+          html += `<rect x="${bx.toFixed(1)}" y="${yAll.toFixed(1)}" width="${barW.toFixed(1)}" height="${hAll.toFixed(1)}" rx="2" fill="var(--chart-1)" opacity="${showRecent ? '0.4' : '0.85'}" />`;
+          html += `<text x="${cx.toFixed(1)}" y="${(yAll - 3).toFixed(1)}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9">${cAll}</text>`;
+        }
+
+        if (showRecent && cRec > 0) {
+          const hRec = (cRec / maxCount) * plotH;
+          const yRec = padT + plotH - hRec;
+          const recW = barW * 0.6;
+          const recX = cx - recW / 2;
+          html += `<rect x="${recX.toFixed(1)}" y="${yRec.toFixed(1)}" width="${recW.toFixed(1)}" height="${hRec.toFixed(1)}" rx="1.5" fill="var(--chart-2)" opacity="0.95" />`;
+        }
+
+        const startSec = loBound + b * binStep;
+        const endSec = startSec + binStep;
+        const fmtSec = (ms) => binStep < 1000 ? (ms / 1000).toFixed(1) : Math.round(ms / 1000);
+        const rangeLabel = `${fmtSec(startSec)}-${fmtSec(endSec)}s`;
+        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9">${rangeLabel}</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    window.setPenalty = function(index, penalty) {
+      if (!solves[index]) return;
+      solves[index].penalty = (solves[index].penalty === penalty && penalty !== "OK") ? "OK" : penalty;
+      saveSolves();
+      if (index === solves.length - 1 && state === "STOPPED") {
+        timerDisplayEl.textContent = formatSolve(solves[index]);
+      }
+      renderStatsAndHistory();
+    };
+
+    window.deleteSolve = function(index) {
+      solves.splice(index, 1);
+      saveSolves();
+      if (solves.length === 0 && state === "STOPPED") {
+        cancelTimer();
+      }
+      renderStatsAndHistory();
+    };
+
+    // Quick actions for latest solve
+    document.getElementById("btnOk").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "OK"); });
+    document.getElementById("btnPlus2").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "+2"); });
+    document.getElementById("btnDnf").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "DNF"); });
+    document.getElementById("btnDeleteLast").addEventListener("click", () => { if (solves.length) window.deleteSolve(solves.length - 1); });
+
+    // Settings & Controls
+    nextScrambleBtn.addEventListener("click", (e) => {
+      e.target.blur();
+      refreshScramble();
+    });
+
+    uiThemeSelectEl.addEventListener("change", (e) => {
+      e.target.blur();
+      applyUiTheme(uiThemeSelectEl.value);
+      saveSettings();
+    });
+
+    crossDifficultyEl.addEventListener("change", (e) => {
+      e.target.blur();
+      saveSettings();
+      switchSession();
+      refreshScramble();
+    });
+
+    inspectionModeEl.addEventListener("change", (e) => {
+      e.target.blur();
+      saveSettings();
+      syncDefaultMetricMode();
+      switchSession();
+    });
+
+    centerAlignModeEl.addEventListener("change", (e) => {
+      e.target.blur();
+      saveSettings();
+      switchSession();
+    });
+
+    soundToggleEl.addEventListener("click", (e) => {
+      e.target.blur();
+      soundEnabled = !soundEnabled;
+      soundToggleEl.textContent = soundEnabled ? "🔊 音: ON" : "🔇 音: OFF";
+      saveSettings();
+    });
+
+    netToggleEl.addEventListener("click", (e) => {
+      e.target.blur();
+      showNet = !showNet;
+      applyNetVisibility();
+      saveSettings();
+    });
+
+    // Color Palette Customizer
+    const COLORS_KEY = "cfop_cross_timer_colors_v1";
+    const colorPanelEl = document.getElementById("colorSettingsPanel");
+    const colorInputsGridEl = document.getElementById("colorInputsGrid");
+
+    function loadColors() {
+      try {
+        const raw = storageGet(COLORS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          for (const m of COLOR_META) {
+            if (typeof parsed[m.key] === "string" && /^#[0-9a-fA-F]{6}$/.test(parsed[m.key])) {
+              COLOR_HEX[m.key] = parsed[m.key].toLowerCase();
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    function saveColors() {
+      storageSet(COLORS_KEY, COLOR_HEX);
+    }
+
+    let activeColorKey = "W";
+    const PRESET_COLORS = [
+      "#ffffff", "#f8fafc", "#fef08a", "#eab308", "#facc15",
+      "#22c55e", "#16a34a", "#4ade80", "#3b82f6", "#2563eb",
+      "#06b6d4", "#ef4444", "#dc2626", "#f97316", "#fb923c",
+      "#1e293b", "#0f172a", "#334155", "#000000"
+    ];
+
+    function hexToHsl(hex) {
+      let r = parseInt(hex.slice(1, 3), 16) / 255;
+      let g = parseInt(hex.slice(3, 5), 16) / 255;
+      let b = parseInt(hex.slice(5, 7), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h /= 6;
+      }
+      return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+    }
+
+    function hslToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n) => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, "0");
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+
+    const hslHEl = document.getElementById("hslH");
+    const hslSEl = document.getElementById("hslS");
+    const hslLEl = document.getElementById("hslL");
+    const hslHValEl = document.getElementById("hslHVal");
+    const hslSValEl = document.getElementById("hslSVal");
+    const hslLValEl = document.getElementById("hslLVal");
+    const activeSwatchEl = document.getElementById("activeColorSwatch");
+    const activeLabelEl = document.getElementById("activeColorLabel");
+    const activeHexBadgeEl = document.getElementById("activeColorHexBadge");
+    const presetSwatchesEl = document.getElementById("presetSwatches");
+
+    function syncPickerToActive() {
+      const hex = COLOR_HEX[activeColorKey];
+      const meta = COLOR_META.find((m) => m.key === activeColorKey);
+      const [h, s, l] = hexToHsl(hex);
+      hslHEl.value = h;
+      hslSEl.value = s;
+      hslLEl.value = l;
+      hslHValEl.textContent = `${h}°`;
+      hslSValEl.textContent = `${s}%`;
+      hslLValEl.textContent = `${l}%`;
+      activeSwatchEl.style.backgroundColor = hex;
+      activeLabelEl.textContent = meta ? meta.label : activeColorKey;
+      activeHexBadgeEl.textContent = hex;
+
+      // Highlight active card
+      colorInputsGridEl.querySelectorAll("[data-card-key]").forEach((el) => {
+        if (el.dataset.cardKey === activeColorKey) {
+          el.classList.add("border-[var(--primary)]", "ring-1", "ring-[var(--primary)]");
+        } else {
+          el.classList.remove("border-[var(--primary)]", "ring-1", "ring-[var(--primary)]");
+        }
+      });
+    }
+
+    function applyActiveColor(newHex) {
+      const norm = newHex.toLowerCase();
+      COLOR_HEX[activeColorKey] = norm;
+      const swatch = colorInputsGridEl.querySelector(`[data-swatch-key="${activeColorKey}"]`);
+      const input = colorInputsGridEl.querySelector(`input[data-key="${activeColorKey}"]`);
+      if (swatch) swatch.style.backgroundColor = norm;
+      if (input && document.activeElement !== input) input.value = norm;
+      syncPickerToActive();
+      saveColors();
+      drawAllNets();
+    }
+
+    function onHslInput() {
+      const h = parseInt(hslHEl.value, 10);
+      const s = parseInt(hslSEl.value, 10);
+      const l = parseInt(hslLEl.value, 10);
+      hslHValEl.textContent = `${h}°`;
+      hslSValEl.textContent = `${s}%`;
+      hslLValEl.textContent = `${l}%`;
+      applyActiveColor(hslToHex(h, s, l));
+    }
+
+    hslHEl.addEventListener("input", onHslInput);
+    hslSEl.addEventListener("input", onHslInput);
+    hslLEl.addEventListener("input", onHslInput);
+
+    function renderPresetSwatches() {
+      presetSwatchesEl.innerHTML = "";
+      for (const hex of PRESET_COLORS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "w-5 h-5 rounded border border-[var(--border)] cursor-pointer hover:scale-110 transition-transform";
+        btn.style.backgroundColor = hex;
+        btn.title = hex;
+        btn.addEventListener("click", (e) => {
+          e.target.blur();
+          applyActiveColor(hex);
+        });
+        presetSwatchesEl.appendChild(btn);
+      }
+    }
+
+    function renderColorInputs() {
+      colorInputsGridEl.innerHTML = "";
+      for (const m of COLOR_META) {
+        const val = COLOR_HEX[m.key];
+        const card = document.createElement("div");
+        card.dataset.cardKey = m.key;
+        card.className = "bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 flex flex-col gap-1.5 cursor-pointer transition";
+        card.innerHTML = `
+          <span class="text-[11px] font-medium text-[var(--muted-foreground)]">${m.label}</span>
+          <div class="flex items-center gap-1.5">
+            <span data-swatch-key="${m.key}" class="w-6 h-6 rounded border border-[var(--border)] shrink-0" style="background-color: ${val};"></span>
+            <input type="text" data-key="${m.key}" value="${val}" maxlength="7" spellcheck="false" class="w-full font-mono text-xs bg-[var(--card)] border border-[var(--border)] rounded px-1.5 py-1 focus:outline-none focus:border-[var(--primary)]" />
+          </div>
+        `;
+        const hexInput = card.querySelector('input[type="text"]');
+
+        card.addEventListener("click", () => {
+          activeColorKey = m.key;
+          syncPickerToActive();
+        });
+
+        hexInput.addEventListener("focus", () => {
+          activeColorKey = m.key;
+          syncPickerToActive();
+        });
+
+        hexInput.addEventListener("input", () => {
+          let v = hexInput.value.trim();
+          if (v && !v.startsWith("#")) v = "#" + v;
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+            activeColorKey = m.key;
+            applyActiveColor(v);
+          }
+        });
+
+        hexInput.addEventListener("blur", () => {
+          hexInput.value = COLOR_HEX[m.key];
+        });
+
+        colorInputsGridEl.appendChild(card);
+      }
+      syncPickerToActive();
+    }
+
+    document.getElementById("colorSettingsToggle").addEventListener("click", (e) => {
+      e.target.blur();
+      colorPanelEl.classList.toggle("hidden");
+      if (!colorPanelEl.classList.contains("hidden")) {
+        drawAllNets();
+      }
+    });
+
+    document.getElementById("closeColorsBtn").addEventListener("click", (e) => {
+      e.target.blur();
+      colorPanelEl.classList.add("hidden");
+    });
+
+    colorPanelEl.addEventListener("click", (e) => {
+      if (e.target === colorPanelEl) {
+        colorPanelEl.classList.add("hidden");
+      }
+    });
+
+    document.getElementById("resetColorsBtn").addEventListener("click", (e) => {
+      e.target.blur();
+      COLOR_HEX = { ...DEFAULT_COLORS };
+      saveColors();
+      renderColorInputs();
+      drawAllNets();
+    });
+
+    const clearHistoryBtnEl = document.getElementById("clearHistoryBtn");
+    let clearConfirmTimer = null;
+
+    function resetClearBtnState() {
+      if (clearConfirmTimer) {
+        clearTimeout(clearConfirmTimer);
+        clearConfirmTimer = null;
+      }
+      clearHistoryBtnEl.dataset.confirming = "false";
+      clearHistoryBtnEl.textContent = "リセット";
+      clearHistoryBtnEl.classList.remove("bg-[var(--error)]", "text-white", "border-[var(--error)]", "hover:opacity-90");
+      clearHistoryBtnEl.classList.add("text-[var(--error)]", "border-[var(--border)]", "hover:bg-[var(--secondary)]");
+    }
+
+    clearHistoryBtnEl.addEventListener("click", (e) => {
+      e.target.blur();
+      if (solves.length === 0) return;
+
+      if (clearHistoryBtnEl.dataset.confirming !== "true") {
+        clearHistoryBtnEl.dataset.confirming = "true";
+        clearHistoryBtnEl.textContent = "本当に削除?";
+        clearHistoryBtnEl.classList.remove("text-[var(--error)]", "border-[var(--border)]", "hover:bg-[var(--secondary)]");
+        clearHistoryBtnEl.classList.add("bg-[var(--error)]", "text-white", "border-[var(--error)]", "hover:opacity-90");
+        clearConfirmTimer = setTimeout(resetClearBtnState, 3000);
+        return;
+      }
+
+      resetClearBtnState();
+      solves.length = 0;
+      window.expandedSolveIndex = null;
+      saveSolves();
+      cancelTimer();
+      renderStatsAndHistory();
+    });
+
+    window.addEventListener("themechange", () => drawAllNets());
+
+    // Init
+    loadData();
+    syncDefaultMetricMode();
+    loadColors();
+    renderPresetSwatches();
+    renderColorInputs();
+    refreshScramble();
+    drawAllNets();
+    renderStatsAndHistory();
+  </script>
+</body>
+</html>
