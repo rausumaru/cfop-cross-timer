@@ -1213,36 +1213,42 @@
       const svg = document.getElementById("trendChart");
       const calcFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
 
-      const ao5Pts = [];
-      const ao12Pts = [];
-      const ao50Pts = [];
+      const ao5All = [];
+      const ao12All = [];
+      const ao50All = [];
       for (let i = 4; i < solves.length; i++) {
         const a5 = calcFn(solves.slice(i - 4, i + 1));
-        if (a5 !== null && a5 !== Infinity) ao5Pts.push({ idx: i, val: a5 });
+        if (a5 !== null) ao5All.push({ idx: i, val: a5 });
         if (i >= 11) {
           const a12 = calcFn(solves.slice(i - 11, i + 1));
-          if (a12 !== null && a12 !== Infinity) ao12Pts.push({ idx: i, val: a12 });
+          if (a12 !== null) ao12All.push({ idx: i, val: a12 });
         }
         if (i >= 49) {
           const a50 = calcFn(solves.slice(i - 49, i + 1));
-          if (a50 !== null && a50 !== Infinity) ao50Pts.push({ idx: i, val: a50 });
+          if (a50 !== null) ao50All.push({ idx: i, val: a50 });
         }
       }
 
-      if (ao5Pts.length < 2) {
+      if (ao5All.length < 2) {
         svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">6回以上記録すると Ao5 / Ao12 / Ao50 推移が表示されます</text>`;
         return;
       }
 
-      const W = 360, H = 120, padL = 34, padR = 10, padT = 8, padB = 14;
+      const allVals = [
+        ...ao5All.map((p) => p.val),
+        ...ao12All.map((p) => p.val),
+        ...ao50All.map((p) => p.val)
+      ].filter((v) => v !== Infinity);
+
+      if (allVals.length === 0) {
+        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">有効な平均がないため推移を表示できません</text>`;
+        return;
+      }
+
+      const W = 360, H = 120, padL = 34, padR = 10, padT = 10, padB = 14;
       const plotW = W - padL - padR;
       const plotH = H - padT - padB;
 
-      const allVals = [
-        ...ao5Pts.map((p) => p.val),
-        ...ao12Pts.map((p) => p.val),
-        ...ao50Pts.map((p) => p.val)
-      ];
       const minV = Math.min(...allVals);
       const maxV = Math.max(...allVals);
 
@@ -1254,8 +1260,8 @@
       let yMax = Math.ceil(maxV / step) * step;
       if (yMax <= yMin) yMax = yMin + step;
 
-      const minIdx = ao5Pts[0].idx;
-      const maxIdx = ao5Pts[ao5Pts.length - 1].idx;
+      const minIdx = ao5All[0].idx;
+      const maxIdx = ao5All[ao5All.length - 1].idx;
       const idxSpan = Math.max(1, maxIdx - minIdx);
       const xOf = (i) => padL + ((i - minIdx) / idxSpan) * plotW;
       const yOf = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
@@ -1271,27 +1277,54 @@
       html += `<text x="${padL}" y="${H - 2}" text-anchor="start" fill="var(--muted-foreground)" font-size="9">#${minIdx + 1}</text>`;
       html += `<text x="${W - padR}" y="${H - 2}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">#${maxIdx + 1}</text>`;
 
-      // Ao5 line
-      const ao5Path = ao5Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
-      html += `<path d="${ao5Path}" fill="none" stroke="var(--chart-1)" stroke-width="2" />`;
-      for (const p of ao5Pts) {
-        html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="2" fill="var(--chart-1)" />`;
-      }
+      const drawSeries = (pts, color, strokeWidth) => {
+        if (pts.length === 0) return;
+        const segments = [];
+        let curr = [];
+        for (const p of pts) {
+          if (p.val === Infinity) {
+            if (curr.length > 0) {
+              segments.push(curr);
+              curr = [];
+            }
+          } else {
+            curr.push(p);
+          }
+        }
+        if (curr.length > 0) segments.push(curr);
 
-      // Ao12 line
-      if (ao12Pts.length >= 2) {
-        const ao12Path = ao12Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
-        html += `<path d="${ao12Path}" fill="none" stroke="var(--chart-2)" stroke-width="2.5" />`;
-      } else if (ao12Pts.length === 1) {
-        html += `<circle cx="${xOf(ao12Pts[0].idx).toFixed(1)}" cy="${yOf(ao12Pts[0].val).toFixed(1)}" r="2.5" fill="var(--chart-2)" />`;
-      }
+        // Dashed bridges across DNF gaps
+        for (let s = 0; s < segments.length - 1; s++) {
+          const prev = segments[s][segments[s].length - 1];
+          const next = segments[s + 1][0];
+          html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.45" />`;
+        }
 
-      // Ao50 line
-      if (ao50Pts.length >= 2) {
-        const ao50Path = ao50Pts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
-        html += `<path d="${ao50Path}" fill="none" stroke="var(--success)" stroke-width="2.5" />`;
-      } else if (ao50Pts.length === 1) {
-        html += `<circle cx="${xOf(ao50Pts[0].idx).toFixed(1)}" cy="${yOf(ao50Pts[0].val).toFixed(1)}" r="2.5" fill="var(--success)" />`;
+        // Solid segments (and subtle isolated point if single valid point between DNFs)
+        for (const seg of segments) {
+          if (seg.length >= 2) {
+            const path = seg.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+            html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
+          } else if (seg.length === 1) {
+            const p = seg[0];
+            html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${(strokeWidth / 2).toFixed(1)}" fill="${color}" />`;
+          }
+        }
+      };
+
+      drawSeries(ao5All, "var(--chart-1)", 2);
+      drawSeries(ao12All, "var(--chart-2)", 2.5);
+      drawSeries(ao50All, "var(--success)", 2.5);
+
+      // Red X markers at top edge for DNF average positions
+      const dnfIdxSet = new Set();
+      for (const p of [...ao5All, ...ao12All, ...ao50All]) {
+        if (p.val === Infinity) dnfIdxSet.add(p.idx);
+      }
+      const markerY = padT + 1;
+      for (const idx of dnfIdxSet) {
+        const mx = xOf(idx);
+        html += `<path d="M ${(mx - 2.5).toFixed(1)} ${(markerY - 2.5).toFixed(1)} L ${(mx + 2.5).toFixed(1)} ${(markerY + 2.5).toFixed(1)} M ${(mx - 2.5).toFixed(1)} ${(markerY + 2.5).toFixed(1)} L ${(mx + 2.5).toFixed(1)} ${(markerY - 2.5).toFixed(1)}" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" />`;
       }
 
       svg.innerHTML = html;
