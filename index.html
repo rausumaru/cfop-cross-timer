@@ -1300,6 +1300,17 @@
           html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.45" />`;
         }
 
+        // Trailing horizontal dashed line when latest point(s) are DNF
+        if (segments.length > 0 && pts[pts.length - 1].val === Infinity) {
+          const lastSeg = segments[segments.length - 1];
+          const lastValid = lastSeg[lastSeg.length - 1];
+          const endIdx = pts[pts.length - 1].idx;
+          if (endIdx > lastValid.idx) {
+            const y = yOf(lastValid.val).toFixed(1);
+            html += `<line x1="${xOf(lastValid.idx).toFixed(1)}" y1="${y}" x2="${xOf(endIdx).toFixed(1)}" y2="${y}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.45" />`;
+          }
+        }
+
         // Solid segments (and subtle isolated point if single valid point between DNFs)
         for (const seg of segments) {
           if (seg.length >= 2) {
@@ -1315,17 +1326,6 @@
       drawSeries(ao5All, "var(--chart-1)", 2);
       drawSeries(ao12All, "var(--chart-2)", 2.5);
       drawSeries(ao50All, "var(--success)", 2.5);
-
-      // Red X markers at top edge for DNF average positions
-      const dnfIdxSet = new Set();
-      for (const p of [...ao5All, ...ao12All, ...ao50All]) {
-        if (p.val === Infinity) dnfIdxSet.add(p.idx);
-      }
-      const markerY = padT + 1;
-      for (const idx of dnfIdxSet) {
-        const mx = xOf(idx);
-        html += `<path d="M ${(mx - 2.5).toFixed(1)} ${(markerY - 2.5).toFixed(1)} L ${(mx + 2.5).toFixed(1)} ${(markerY + 2.5).toFixed(1)} M ${(mx - 2.5).toFixed(1)} ${(markerY + 2.5).toFixed(1)} L ${(mx + 2.5).toFixed(1)} ${(markerY - 2.5).toFixed(1)}" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" />`;
-      }
 
       svg.innerHTML = html;
     }
