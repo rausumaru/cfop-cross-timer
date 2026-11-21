@@ -774,6 +774,11 @@
       return solve.timeMs;
     }
 
+    function getEffectiveInspectionMs(solve) {
+      if (solve.penalty === "DNF") return Infinity;
+      return typeof solve.inspectionMs === "number" ? solve.inspectionMs : null;
+    }
+
     function formatSolve(solve) {
       if (solve.penalty === "DNF") return "DNF";
       if (solve.penalty === "+2") return formatTime(solve.timeMs + 2000) + "+";
@@ -1068,8 +1073,10 @@
     function calcInspectionAverage(slice) {
       if (slice.length < 3) return null;
       const trim = slice.length >= 20 ? Math.ceil(slice.length * 0.05) : 1;
-      const vals = slice.map((s) => s.inspectionMs).filter((v) => typeof v === "number");
-      if (vals.length < slice.length) return null;
+      const vals = slice.map(getEffectiveInspectionMs);
+      if (vals.some((v) => v === null)) return null;
+      const dnfCount = vals.filter((v) => v === Infinity).length;
+      if (dnfCount > trim) return Infinity;
       const sorted = [...vals].sort((a, b) => a - b);
       const trimmed = sorted.slice(trim, sorted.length - trim);
       return trimmed.reduce((acc, v) => acc + v, 0) / trimmed.length;
@@ -1077,7 +1084,7 @@
 
     function renderStatsAndHistory() {
       const validSolves = solves.map(getEffectiveMs).filter((v) => v !== Infinity);
-      const inspTimes = solves.map((s) => s.inspectionMs).filter((v) => typeof v === "number");
+      const inspTimes = solves.map(getEffectiveInspectionMs).filter((v) => v !== null && v !== Infinity);
       document.getElementById("statCount").textContent = `${validSolves.length} / ${solves.length}`;
 
       const targetTimes = metricMode === "inspection" ? inspTimes : validSolves;
@@ -1296,7 +1303,7 @@
         .map((s, idx) => ({
           idx,
           val: metricMode === "inspection"
-            ? (typeof s.inspectionMs === "number" ? s.inspectionMs : Infinity)
+            ? (getEffectiveInspectionMs(s) ?? Infinity)
             : getEffectiveMs(s)
         }))
         .filter((p) => p.val !== Infinity);
