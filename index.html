@@ -1209,23 +1209,40 @@
       }
     }
 
+    function calcProvisionalMean(slice, getValFn) {
+      const valid = slice.map(getValFn).filter((v) => v !== null && v !== Infinity);
+      if (valid.length === 0) return null;
+      return valid.reduce((acc, v) => acc + v, 0) / valid.length;
+    }
+
     function renderAvgTrendChart() {
       const svg = document.getElementById("trendChart");
       const calcFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
+      const getValFn = metricMode === "inspection" ? getEffectiveInspectionMs : getEffectiveMs;
+
+      const buildPoint = (idx, slice) => {
+        const avg = calcFn(slice);
+        if (avg === null) return null;
+        if (avg !== Infinity) {
+          return { idx, val: avg, provisional: false };
+        }
+        const prov = calcProvisionalMean(slice, getValFn);
+        return { idx, val: prov === null ? Infinity : prov, provisional: true };
+      };
 
       const ao5All = [];
       const ao12All = [];
       const ao50All = [];
       for (let i = 4; i < solves.length; i++) {
-        const a5 = calcFn(solves.slice(i - 4, i + 1));
-        if (a5 !== null) ao5All.push({ idx: i, val: a5 });
+        const p5 = buildPoint(i, solves.slice(i - 4, i + 1));
+        if (p5 !== null) ao5All.push(p5);
         if (i >= 11) {
-          const a12 = calcFn(solves.slice(i - 11, i + 1));
-          if (a12 !== null) ao12All.push({ idx: i, val: a12 });
+          const p12 = buildPoint(i, solves.slice(i - 11, i + 1));
+          if (p12 !== null) ao12All.push(p12);
         }
         if (i >= 49) {
-          const a50 = calcFn(solves.slice(i - 49, i + 1));
-          if (a50 !== null) ao50All.push({ idx: i, val: a50 });
+          const p50 = buildPoint(i, solves.slice(i - 49, i + 1));
+          if (p50 !== null) ao50All.push(p50);
         }
       }
 
@@ -1279,47 +1296,80 @@
 
       const drawSeries = (pts, color, strokeWidth) => {
         if (pts.length === 0) return;
-        const segments = [];
+
+        // Split into contiguous blocks of points that have a finite value (valid or provisional)
+        const blocks = [];
         let curr = [];
         for (const p of pts) {
           if (p.val === Infinity) {
             if (curr.length > 0) {
-              segments.push(curr);
+              blocks.push(curr);
               curr = [];
             }
           } else {
             curr.push(p);
           }
         }
-        if (curr.length > 0) segments.push(curr);
+        if (curr.length > 0) blocks.push(curr);
 
-        // Dashed bridges across DNF gaps
-        for (let s = 0; s < segments.length - 1; s++) {
-          const prev = segments[s][segments[s].length - 1];
-          const next = segments[s + 1][0];
-          html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.45" />`;
+        // Faint dashed bridges across all-DNF gaps (where even provisional mean cannot be computed)
+        for (let b = 0; b < blocks.length - 1; b++) {
+          const prev = blocks[b][blocks[b].length - 1];
+          const next = blocks[b + 1][0];
+          html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
         }
 
-        // Trailing horizontal dashed line when latest point(s) are DNF
-        if (segments.length > 0 && pts[pts.length - 1].val === Infinity) {
-          const lastSeg = segments[segments.length - 1];
-          const lastValid = lastSeg[lastSeg.length - 1];
+        // Trailing horizontal dashed line only if the latest window is completely all-DNF
+        if (blocks.length > 0 && pts[pts.length - 1].val === Infinity) {
+          const lastBlock = blocks[blocks.length - 1];
+          const lastFinite = lastBlock[lastBlock.length - 1];
           const endIdx = pts[pts.length - 1].idx;
-          if (endIdx > lastValid.idx) {
-            const y = yOf(lastValid.val).toFixed(1);
-            html += `<line x1="${xOf(lastValid.idx).toFixed(1)}" y1="${y}" x2="${xOf(endIdx).toFixed(1)}" y2="${y}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.45" />`;
+          if (endIdx > lastFinite.idx) {
+            const y = yOf(lastFinite.val).toFixed(1);
+            html += `<line x1="${xOf(lastFinite.idx).toFixed(1)}" y1="${y}" x2="${xOf(endIdx).toFixed(1)}" y2="${y}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
           }
         }
 
-        // Solid segments (and subtle isolated point if single valid point between DNFs)
-        for (const seg of segments) {
-          if (seg.length >= 2) {
-            const path = seg.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
-            html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
-          } else if (seg.length === 1) {
-            const p = seg[0];
-            html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${(strokeWidth / 2).toFixed(1)}" fill="${color}" />`;
+        // Draw each contiguous block: solid between two non-provisional points, dashed otherwise
+        for (const block of blocks) {
+          if (block.length === 1) {
+            const p = block[0];
+            if (p.provisional) {
+              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${Math.max(1.5, strokeWidth / 2).toFixed(1)}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.65" />`;
+            } else {
+              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${(strokeWidth / 2).toFixed(1)}" fill="${color}" />`;
+            }
+            continue;
           }
+
+          let runPts = [block[0]];
+          let runDashed = null;
+          const flushRun = () => {
+            if (runPts.length < 2) return;
+            const path = runPts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+            if (runDashed) {
+              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${Math.max(1.5, strokeWidth - 0.5)}" stroke-dasharray="3 3" opacity="0.65" stroke-linecap="round" stroke-linejoin="round" />`;
+            } else {
+              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
+            }
+          };
+
+          for (let k = 1; k < block.length; k++) {
+            const prev = block[k - 1];
+            const next = block[k];
+            const isDashed = prev.provisional || next.provisional;
+            if (runDashed === null) {
+              runDashed = isDashed;
+              runPts.push(next);
+            } else if (runDashed === isDashed) {
+              runPts.push(next);
+            } else {
+              flushRun();
+              runPts = [prev, next];
+              runDashed = isDashed;
+            }
+          }
+          flushRun();
         }
       };
 
