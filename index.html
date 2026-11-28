@@ -71,111 +71,101 @@
     }
   </style>
 </head>
-<body data-ui-theme="cstimer-blue" class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 md:h-screen md:overflow-hidden flex flex-col p-2.5 gap-2.5">
+<body data-ui-theme="cstimer-blue" class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col p-2.5 gap-2.5">
 
   <!-- Top Compact Header -->
-  <header class="shrink-0 bg-[var(--header-bg)] text-[var(--header-fg)] rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-    <div class="flex items-center gap-2">
-      <div class="w-6 h-6 rounded-md bg-white/20 text-white flex items-center justify-center font-bold text-xs">
+  <header class="shrink-0 bg-[var(--header-bg)] text-[var(--header-fg)] rounded-xl px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shadow-sm">
+    <div class="flex items-center gap-1.5 shrink-0">
+      <div class="w-5 h-5 rounded-md bg-white/20 text-white flex items-center justify-center font-bold text-xs">
         +
       </div>
-      <h1 class="text-sm font-bold leading-none">CFOP Cross Timer</h1>
+      <h1 class="text-sm font-bold leading-none whitespace-nowrap">CFOP Cross Timer</h1>
     </div>
 
-    <div class="flex flex-wrap items-center gap-1.5 text-xs text-[var(--foreground)]">
-      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
-        <span class="text-[var(--muted-foreground)] hidden sm:inline">テーマ:</span>
+    <div class="flex flex-wrap items-center gap-1 text-xs text-[var(--foreground)]">
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1" title="UIテーマ">
+        <span class="text-[var(--muted-foreground)] hidden 2xl:inline">テーマ:</span>
         <select id="uiThemeSelect" class="bg-transparent font-medium cursor-pointer focus:outline-none">
-          <option value="cstimer-blue" selected>csTimer ブルー</option>
-          <option value="cstimer-warm">csTimer クリーム</option>
-          <option value="cstimer-dark">csTimer ダーク</option>
+          <option value="cstimer-blue" selected>ブルー</option>
+          <option value="cstimer-warm">クリーム</option>
+          <option value="cstimer-dark">ダーク</option>
         </select>
       </label>
 
-      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
-        <span class="text-[var(--muted-foreground)] hidden sm:inline">スクランブル:</span>
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1" title="スクランブル条件">
+        <span class="text-[var(--muted-foreground)] hidden 2xl:inline">スクランブル:</span>
         <select id="crossDifficulty" class="bg-transparent font-medium cursor-pointer focus:outline-none">
           <option value="standard" selected>標準 (黄1以下)</option>
           <option value="exact1">1個揃い</option>
         </select>
       </label>
 
-      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
-        <span class="text-[var(--muted-foreground)] hidden sm:inline">インスペクション:</span>
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1" title="インスペクション / 計測モード">
+        <span class="text-[var(--muted-foreground)] hidden xl:inline">モード:</span>
         <select id="inspectionMode" class="bg-transparent font-medium cursor-pointer focus:outline-none">
           <option value="wca">15秒 (WCA)</option>
           <option value="free" selected>無制限</option>
+          <option value="notime">計測なし (成功/DNF)</option>
         </select>
       </label>
 
-      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1">
-        <span class="text-[var(--muted-foreground)] hidden sm:inline">センター合わせ:</span>
+      <label id="timeVisibilityWrap" class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1 transition-opacity" title="インスペクション中・結果のタイム表示切替（裏では通常通り計測されます）">
+        <span class="text-[var(--muted-foreground)] hidden xl:inline">タイム:</span>
+        <select id="timeVisibility" class="bg-transparent font-medium cursor-pointer focus:outline-none">
+          <option value="all" selected>すべて表示</option>
+          <option value="hide_running">計測中隠す</option>
+          <option value="hide_all">すべて隠す</option>
+        </select>
+      </label>
+
+      <label class="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1" title="センター合わせ">
+        <span class="text-[var(--muted-foreground)] hidden xl:inline">センター:</span>
         <select id="centerAlignMode" class="bg-transparent font-medium cursor-pointer focus:outline-none">
           <option value="with" selected>あり</option>
           <option value="without">なし</option>
         </select>
       </label>
 
-      <button id="soundToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="5, 10, 12, 13, 14秒の通知音">
+      <button id="soundToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1 hover:bg-[var(--secondary)] transition cursor-pointer whitespace-nowrap" title="5, 10, 12, 13, 14秒の通知音 (15秒モード用)">
         🔊 音: ON
       </button>
 
-      <button id="netToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="スクランブル展開図の表示切替">
+      <button id="netToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1 hover:bg-[var(--secondary)] transition cursor-pointer whitespace-nowrap" title="スクランブル展開図の表示切替">
         展開図: OFF
       </button>
 
-      <button id="colorSettingsToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 hover:bg-[var(--secondary)] transition cursor-pointer" title="展開図の6色をカスタマイズ">
+      <button id="colorSettingsToggle" type="button" class="bg-[var(--card)] border border-[var(--border)] rounded-md px-1.5 py-1 hover:bg-[var(--secondary)] transition cursor-pointer whitespace-nowrap" title="展開図の6色をカスタマイズ">
         🎨 色調整
       </button>
     </div>
   </header>
 
-  <!-- Main 2-Column Workspace (fits in 1 screen) -->
-  <div class="flex-1 min-h-0 flex flex-col md:flex-row gap-2.5">
+  <!-- Main 2-Column Workspace (fits in 1 screen on desktop) -->
+  <div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-2.5">
 
     <!-- Left Sidebar: Stats Summary + History List -->
-    <aside class="w-full md:w-72 lg:w-80 shrink-0 flex flex-col gap-2.5 min-h-0">
-      <!-- Compact Stats Grid (2x3) -->
+    <aside class="w-full lg:w-[340px] shrink-0 flex flex-col gap-2.5 min-h-0">
+      <!-- Compact Stats Grid (2x3, A-plan unified layout) -->
       <section class="shrink-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 shadow-sm space-y-1.5">
         <div class="flex items-center justify-between gap-1">
           <div class="min-w-0">
-            <h2 class="text-xs font-semibold leading-tight">統計</h2>
+            <div class="flex items-center gap-1.5">
+              <h2 class="text-xs font-semibold leading-tight">統計</h2>
+              <span id="stabilityOnlyBadge" class="hidden text-[10px] px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--primary)] font-semibold leading-none">安定性表示</span>
+            </div>
             <div id="sessionModeBadge" class="text-[10px] text-[var(--muted-foreground)] truncate">標準 / 無制限 / センターあり</div>
           </div>
           <button id="statModeToggle" type="button" class="shrink-0 text-[11px] px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-medium hover:opacity-85 transition cursor-pointer">
             対象: インスペクション
           </button>
         </div>
-        <div class="grid grid-cols-3 gap-1.5 text-center">
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1">
-            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Solves</div>
-            <div id="statCount" class="font-mono tabular-nums text-sm font-bold mt-0.5">0 / 0</div>
-          </div>
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--success)]">
-            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Best</div>
-            <div id="statBest" class="font-mono tabular-nums text-sm font-bold text-[var(--success)] mt-0.5">-</div>
-          </div>
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1">
-            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Mean</div>
-            <div id="statMean" class="font-mono tabular-nums text-sm font-bold mt-0.5">-</div>
-          </div>
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--primary)]">
-            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Ao5</div>
-            <div id="statAo5" class="font-mono tabular-nums text-sm font-bold text-[var(--primary)] mt-0.5">-</div>
-          </div>
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--chart-1)]">
-            <div class="text-[10px] text-[var(--muted-foreground)] leading-tight">Ao12</div>
-            <div id="statAo12" class="font-mono tabular-nums text-sm font-bold mt-0.5">-</div>
-          </div>
-          <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 border-t-2 border-t-[var(--warning)]">
-            <div id="statSubMeanLabel" class="text-[10px] text-[var(--muted-foreground)] leading-tight">Mean Solve</div>
-            <div id="statInspMean" class="font-mono tabular-nums text-sm font-bold text-[var(--warning)] mt-0.5">-</div>
-          </div>
+        <div id="statsGrid" class="grid grid-cols-3 gap-1.5 text-center">
+          <!-- Populated dynamically by renderStatsAndHistory() -->
         </div>
       </section>
 
       <!-- History Table (fills remaining sidebar height) -->
-      <section class="flex-1 min-h-[200px] md:min-h-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col">
+      <section class="flex-1 min-h-[220px] lg:min-h-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col">
         <div class="shrink-0 flex items-center justify-between mb-1.5">
           <h2 class="text-xs font-semibold">試行履歴 <span class="text-[10px] font-normal text-[var(--muted-foreground)]">(行クリックでスクランブル)</span></h2>
           <button id="clearHistoryBtn" type="button" class="text-[11px] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] transition cursor-pointer">
@@ -184,12 +174,12 @@
         </div>
         <div class="flex-1 min-h-0 overflow-y-auto border border-[var(--border)] rounded-lg">
           <table class="w-full text-xs text-left border-collapse">
-            <thead class="bg-[var(--background)] text-[var(--muted-foreground)] sticky top-0 text-[11px]">
+            <thead id="historyHead" class="bg-[var(--background)] text-[var(--muted-foreground)] sticky top-0 text-[11px]">
               <tr>
                 <th class="py-1.5 px-2 font-medium">#</th>
                 <th class="py-1.5 px-1.5 font-medium">Solve</th>
                 <th class="py-1.5 px-1.5 font-medium">Insp.</th>
-                <th class="py-1.5 px-1.5 font-medium">Ao5</th>
+                <th class="py-1.5 px-1.5 font-medium">HM5(Insp)</th>
                 <th class="py-1.5 px-1.5 font-medium text-right">操作</th>
               </tr>
             </thead>
@@ -203,7 +193,7 @@
       </section>
     </aside>
 
-    <!-- Right Main Panel: Scramble (top) + Timer (middle) + Chart & Cube Net (bottom) -->
+    <!-- Right Main Panel: Scramble (top) + Timer / No-Time (middle) + Chart & Cube Net (bottom) -->
     <main class="flex-1 min-w-0 min-h-0 flex flex-col gap-2.5">
 
       <!-- Scramble Bar -->
@@ -222,28 +212,62 @@
         </button>
       </section>
 
-      <!-- Main Timer Area (fills middle space comfortably) -->
-      <section id="timerArea" class="flex-1 min-h-[170px] bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-3 flex flex-col items-center justify-center select-none cursor-pointer transition-colors shadow-sm">
-        <div id="stateLabel" class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)] mb-1.5">
-          待機中
+      <!-- Main Center Area (switches between Timed Mode and No-Time Mode) -->
+      <section id="timerArea" class="flex-1 min-h-[180px] bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-3 flex flex-col items-center justify-center select-none transition-colors shadow-sm">
+        <!-- Timed Mode UI -->
+        <div id="timedCenterUI" class="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+          <div id="stateLabel" class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)] mb-1.5">
+            待機中
+          </div>
+
+          <div id="timerDisplay" class="h-16 flex items-center justify-center font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none text-center">
+            0.00
+          </div>
+
+          <div id="inspectionSub" class="h-4 text-xs font-mono text-[var(--muted-foreground)] mt-1 text-center"></div>
+
+          <p id="timerHint" class="text-[11px] text-[var(--muted-foreground)] mt-1.5 text-center">
+            Spaceを押して離すとインスペクション開始（タップ操作も可）
+          </p>
+
+          <!-- Quick actions for latest solve -->
+          <div id="quickActions" class="mt-2.5 flex items-center gap-1.5 opacity-0 pointer-events-none transition-opacity">
+            <button id="btnOk" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">OK</button>
+            <button id="btnPlus2" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">+2 (2)</button>
+            <button id="btnDnf" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">DNF (D)</button>
+            <button id="btnDeleteLast" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer">削除</button>
+          </div>
         </div>
 
-        <div id="timerDisplay" class="font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none my-1">
-          0.00
-        </div>
+        <!-- No-Time (Success / DNF Only) Mode UI -->
+        <div id="noTimeCenterUI" class="hidden w-full max-w-md flex flex-col items-center justify-center gap-2.5">
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--primary)]">
+              計測なしモード（成功 / DNF のみ記録）
+            </span>
+            <span id="noTimeStreakPill" class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-[var(--background)] border border-[var(--border)] text-[var(--success)]">
+              現在 0連続 (Best 0)
+            </span>
+          </div>
 
-        <div id="inspectionSub" class="h-4 text-xs font-mono text-[var(--muted-foreground)] mt-1"></div>
+          <p class="text-[11px] text-[var(--muted-foreground)] text-center">
+            読み切って目をつぶって揃えたら、結果を記録して次のスクランブルへ進みます
+          </p>
 
-        <p id="timerHint" class="text-[11px] text-[var(--muted-foreground)] mt-1.5 text-center">
-          Spaceを押して離すとインスペクション開始（タップ操作も可）
-        </p>
+          <div class="w-full grid grid-cols-2 gap-3">
+            <button id="noTimeOkBtn" type="button" class="py-4 px-4 rounded-xl bg-[var(--success)] text-white font-bold text-lg shadow-sm hover:opacity-90 active:scale-[0.98] transition cursor-pointer flex flex-col items-center justify-center gap-0.5">
+              <span>✓ 成功</span>
+              <span class="text-[11px] font-normal opacity-90">Enter キー</span>
+            </button>
+            <button id="noTimeDnfBtn" type="button" class="py-4 px-4 rounded-xl bg-[var(--error)] text-white font-bold text-lg shadow-sm hover:opacity-90 active:scale-[0.98] transition cursor-pointer flex flex-col items-center justify-center gap-0.5">
+              <span>✕ DNF</span>
+              <span class="text-[11px] font-normal opacity-90">D キー</span>
+            </button>
+          </div>
 
-        <!-- Quick actions for latest solve -->
-        <div id="quickActions" class="mt-2.5 flex items-center gap-1.5 opacity-0 pointer-events-none transition-opacity">
-          <button id="btnOk" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">OK</button>
-          <button id="btnPlus2" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">+2</button>
-          <button id="btnDnf" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">DNF</button>
-          <button id="btnDeleteLast" type="button" class="text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer">削除</button>
+          <div id="noTimeLastBar" class="min-h-[1.75rem] flex flex-wrap items-center justify-center gap-2 text-[11px] text-[var(--muted-foreground)]">
+            <span>Spaceキーは誤爆防止のため無効です</span>
+          </div>
         </div>
       </section>
 
@@ -252,20 +276,19 @@
         <!-- Trend Chart -->
         <div id="chartCard" class="sm:col-span-12 bg-[var(--card)] border border-[var(--border)] rounded-xl p-2.5 flex flex-col shadow-sm">
           <div class="flex flex-wrap items-center justify-between mb-1 gap-1.5">
-            <div class="flex items-center gap-1.5">
+            <div class="flex flex-wrap items-center gap-1.5">
               <h2 id="chartTitle" class="text-xs font-semibold">グラフ</h2>
-              <button id="chartViewToggle" type="button" class="text-[11px] px-2 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-medium hover:opacity-90 transition cursor-pointer">
-                推移: Ao5/12/50
-              </button>
+              <div id="chartViewTabs" class="flex flex-wrap items-center gap-0.5 bg-[var(--background)] border border-[var(--border)] rounded-md p-0.5 text-[11px]">
+                <button data-chart-view="hm" type="button" class="px-2 py-0.5 rounded font-medium cursor-pointer transition" title="DNF=∞の調和平均推移 (HM5 / HM12 / HM50)">調和平均</button>
+                <button data-chart-view="rate" type="button" class="px-2 py-0.5 rounded font-medium cursor-pointer transition" title="直近12回 / 25回の移動成功率">成功率</button>
+                <button data-chart-view="ao" type="button" class="px-2 py-0.5 rounded font-medium cursor-pointer transition" title="従来のWCA平均推移 (Ao5 / Ao12 / Ao50)">従来 Ao</button>
+                <button data-chart-view="dist" type="button" class="px-2 py-0.5 rounded font-medium cursor-pointer transition" title="タイム帯別の成功・DNF分布">タイム分布</button>
+              </div>
               <button id="chartModeToggle" type="button" class="text-[11px] px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-medium hover:opacity-85 transition cursor-pointer">
                 表示: インスペクション
               </button>
             </div>
-            <span id="chartLegend" class="text-[11px] font-medium flex items-center gap-2">
-              <span class="text-[var(--chart-1)]">― Ao5</span>
-              <span class="text-[var(--chart-2)]">― Ao12</span>
-              <span class="text-[var(--success)]">― Ao50</span>
-            </span>
+            <span id="chartLegend" class="text-[11px] font-medium flex flex-wrap items-center gap-2"></span>
           </div>
           <div class="flex-1 flex items-center justify-center">
             <svg id="trendChart" viewBox="0 0 360 120" class="w-full h-[120px] overflow-visible"></svg>
@@ -560,7 +583,7 @@
     // ==========================================
     // 3. State & Timer Logic
     // ==========================================
-    // States: IDLE | INSPECTION | READY | RUNNING | STOPPED
+    // States: IDLE | INSPECTION_READY | INSPECTION | READY | RUNNING | STOPPED
     let state = "IDLE";
     let currentScramble = "";
     let inspectionStart = 0;
@@ -572,6 +595,7 @@
     let justStopped = false;
     let solvesBySession = {};
     let solves = [];
+    let lastRenderedTimerText = "";
 
     const STORAGE_KEY = "cfop_cross_timer_solves_v2";
     const LEGACY_STORAGE_KEY = "cfop_cross_timer_solves_v1";
@@ -579,9 +603,12 @@
 
     const SCRAMBLE_LENGTH = 12;
     let showNet = false;
+    let chartView = "hm"; // "hm" | "rate" | "ao" | "dist"
 
     // DOM Elements
     const inspectionModeEl = document.getElementById("inspectionMode");
+    const timeVisibilityEl = document.getElementById("timeVisibility");
+    const timeVisibilityWrapEl = document.getElementById("timeVisibilityWrap");
     const centerAlignModeEl = document.getElementById("centerAlignMode");
     const soundToggleEl = document.getElementById("soundToggle");
     const netToggleEl = document.getElementById("netToggle");
@@ -591,12 +618,39 @@
     const scrambleTextEl = document.getElementById("scrambleText");
     const nextScrambleBtn = document.getElementById("nextScrambleBtn");
     const timerAreaEl = document.getElementById("timerArea");
+    const timedCenterUIEl = document.getElementById("timedCenterUI");
+    const noTimeCenterUIEl = document.getElementById("noTimeCenterUI");
+    const noTimeOkBtnEl = document.getElementById("noTimeOkBtn");
+    const noTimeDnfBtnEl = document.getElementById("noTimeDnfBtn");
+    const noTimeStreakPillEl = document.getElementById("noTimeStreakPill");
+    const noTimeLastBarEl = document.getElementById("noTimeLastBar");
     const stateLabelEl = document.getElementById("stateLabel");
     const timerDisplayEl = document.getElementById("timerDisplay");
     const inspectionSubEl = document.getElementById("inspectionSub");
     const timerHintEl = document.getElementById("timerHint");
     const quickActionsEl = document.getElementById("quickActions");
     const sessionModeBadgeEl = document.getElementById("sessionModeBadge");
+    const stabilityOnlyBadgeEl = document.getElementById("stabilityOnlyBadge");
+    const statsGridEl = document.getElementById("statsGrid");
+    const historyHeadEl = document.getElementById("historyHead");
+
+    function isNoTimeMode() {
+      return inspectionModeEl.value === "notime";
+    }
+
+    function isTimeHiddenAll() {
+      return isNoTimeMode() || timeVisibilityEl.value === "hide_all";
+    }
+
+    function isTimeHiddenRunning() {
+      return timeVisibilityEl.value === "hide_running" || timeVisibilityEl.value === "hide_all";
+    }
+
+    function syncTimeVisibilityControl() {
+      const noTime = isNoTimeMode();
+      timeVisibilityEl.disabled = noTime;
+      timeVisibilityWrapEl.classList.toggle("opacity-50", noTime);
+    }
 
     function applyNetVisibility() {
       netToggleEl.textContent = showNet ? "展開図: ON" : "展開図: OFF";
@@ -638,7 +692,10 @@
 
     function storageSet(key, obj) {
       const json = JSON.stringify(obj);
-      try { localStorage.setItem(key, json); } catch (_) {}
+      try {
+        localStorage.setItem(key, json);
+        return;
+      } catch (_) {}
       const store = readWindowNameStore();
       store[key] = obj;
       writeWindowNameStore(store);
@@ -666,7 +723,8 @@
     function updateSessionBadge() {
       if (!sessionModeBadgeEl) return;
       const diffLabel = crossDifficultyEl.value === "exact1" ? "1個揃い" : "標準";
-      const inspLabel = inspectionModeEl.value === "wca" ? "15秒" : "無制限";
+      const inspMap = { wca: "15秒", free: "無制限", notime: "計測なし" };
+      const inspLabel = inspMap[inspectionModeEl.value] || "無制限";
       const alignLabel = centerAlignModeEl.value === "without" ? "センターなし" : "センターあり";
       sessionModeBadgeEl.textContent = `${diffLabel} / ${inspLabel} / ${alignLabel}`;
     }
@@ -675,7 +733,8 @@
       window.expandedSolveIndex = null;
       syncActiveSolves();
       updateSessionBadge();
-      if (state === "STOPPED") {
+      syncTimeVisibilityControl();
+      if (state !== "IDLE") {
         cancelTimer();
       }
       renderStatsAndHistory();
@@ -691,8 +750,11 @@
         if (s.crossDifficulty && ["standard", "exact1"].includes(s.crossDifficulty)) {
           crossDifficultyEl.value = s.crossDifficulty;
         }
-        if (s.inspectionMode && ["free", "wca"].includes(s.inspectionMode)) {
+        if (s.inspectionMode && ["free", "wca", "notime"].includes(s.inspectionMode)) {
           inspectionModeEl.value = s.inspectionMode;
+        }
+        if (s.timeVisibility && ["all", "hide_running", "hide_all"].includes(s.timeVisibility)) {
+          timeVisibilityEl.value = s.timeVisibility;
         }
         if (s.centerAlignMode && ["with", "without"].includes(s.centerAlignMode)) {
           centerAlignModeEl.value = s.centerAlignMode;
@@ -703,6 +765,9 @@
         }
         if (typeof s.showNet === "boolean") {
           showNet = s.showNet;
+        }
+        if (s.chartView && ["hm", "rate", "ao", "dist"].includes(s.chartView)) {
+          chartView = s.chartView;
         }
       } catch (_) {}
 
@@ -726,6 +791,7 @@
 
       syncActiveSolves();
       updateSessionBadge();
+      syncTimeVisibilityControl();
       applyNetVisibility();
     }
 
@@ -739,9 +805,11 @@
         uiTheme: uiThemeSelectEl.value,
         crossDifficulty: crossDifficultyEl.value,
         inspectionMode: inspectionModeEl.value,
+        timeVisibility: timeVisibilityEl.value,
         centerAlignMode: centerAlignModeEl.value,
         soundEnabled,
-        showNet
+        showNet,
+        chartView
       });
     }
 
@@ -758,7 +826,7 @@
     }
 
     function formatTime(ms) {
-      if (ms === Infinity || ms == null) return "DNF";
+      if (ms === Infinity || ms == null || Number.isNaN(ms)) return "DNF";
       const sec = ms / 1000;
       if (sec >= 60) {
         const m = Math.floor(sec / 60);
@@ -770,6 +838,7 @@
 
     function getEffectiveMs(solve) {
       if (solve.penalty === "DNF") return Infinity;
+      if (typeof solve.timeMs !== "number") return null;
       if (solve.penalty === "+2") return solve.timeMs + 2000;
       return solve.timeMs;
     }
@@ -781,37 +850,101 @@
 
     function formatSolve(solve) {
       if (solve.penalty === "DNF") return "DNF";
+      if (typeof solve.timeMs !== "number") return "OK";
       if (solve.penalty === "+2") return formatTime(solve.timeMs + 2000) + "+";
       return formatTime(solve.timeMs);
     }
 
+    function setTimerTextIfChanged(text) {
+      if (lastRenderedTimerText !== text) {
+        lastRenderedTimerText = text;
+        timerDisplayEl.textContent = text;
+      }
+    }
+
+    const TIMER_NUM_CLASS = "h-16 flex items-center justify-center font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none text-center";
+    const TIMER_TXT_CLASS = "h-16 flex items-center justify-center font-mono text-3xl sm:text-4xl font-bold tracking-tight leading-none text-center";
+
     function setTimerVisual(mode) {
-      timerDisplayEl.className = "font-mono tabular-nums text-5xl sm:text-6xl font-bold tracking-tight leading-none my-1";
+      lastRenderedTimerText = "";
+      timerDisplayEl.className = TIMER_NUM_CLASS;
       if (mode === "IDLE") {
         stateLabelEl.textContent = "待機中";
+        if (isTimeHiddenAll()) {
+          timerDisplayEl.className = TIMER_TXT_CLASS;
+          setTimerTextIfChanged("準備OK");
+          inspectionSubEl.textContent = "タイム非表示中（裏で計測・保存されます）";
+        } else {
+          setTimerTextIfChanged("0.00");
+          inspectionSubEl.textContent = timeVisibilityEl.value === "hide_running" ? "計測中の秒数は非表示になります" : "";
+        }
         timerHintEl.textContent = "Spaceを押して離すとインスペクション開始（タップ操作も可）";
-        inspectionSubEl.textContent = "";
       } else if (mode === "INSPECTION_READY") {
         stateLabelEl.textContent = "インスペクション待機";
-        timerDisplayEl.classList.add("text-[var(--warning)]");
+        if (isTimeHiddenRunning()) {
+          timerDisplayEl.className = `${TIMER_TXT_CLASS} text-[var(--warning)]`;
+          setTimerTextIfChanged("待機中...");
+        } else {
+          timerDisplayEl.classList.add("text-[var(--warning)]");
+        }
         timerHintEl.textContent = "Spaceを離すとインスペクション開始！";
         inspectionSubEl.textContent = "";
       } else if (mode === "INSPECTION") {
         stateLabelEl.textContent = "インスペクション中";
-        timerDisplayEl.classList.add("text-[var(--warning)]");
+        if (isTimeHiddenRunning()) {
+          timerDisplayEl.className = `${TIMER_TXT_CLASS} text-[var(--warning)]`;
+          setTimerTextIfChanged("読み切り中...");
+          inspectionSubEl.textContent = "秒数は非表示（裏で計測中）";
+        } else {
+          timerDisplayEl.classList.add("text-[var(--warning)]");
+        }
         timerHintEl.textContent = "Spaceをもう1回押して離すとソルブ開始（Escでキャンセル）";
       } else if (mode === "READY") {
         stateLabelEl.textContent = "準備完了";
-        timerDisplayEl.classList.add("text-[var(--success)]");
+        if (isTimeHiddenRunning()) {
+          timerDisplayEl.className = `${TIMER_TXT_CLASS} text-[var(--success)]`;
+          setTimerTextIfChanged("スタート準備OK");
+        } else {
+          timerDisplayEl.classList.add("text-[var(--success)]");
+        }
         timerHintEl.textContent = "Spaceを離すとソルブ開始！";
       } else if (mode === "RUNNING") {
         stateLabelEl.textContent = "計測中";
+        if (isTimeHiddenRunning()) {
+          timerDisplayEl.className = `${TIMER_TXT_CLASS} text-[var(--primary)]`;
+          setTimerTextIfChanged("計測中...");
+        }
         timerHintEl.textContent = "任意のキーを押してストップ";
         inspectionSubEl.textContent = "";
       } else if (mode === "STOPPED") {
         stateLabelEl.textContent = "計測完了";
-        timerHintEl.textContent = "Spaceを押して離すと次のインスペクション開始";
+        timerHintEl.textContent = "Spaceで次へ / D: DNF" + (isTimeHiddenAll() ? "" : " / 2: +2") + " / Backspace: 削除";
       }
+    }
+
+    function renderStoppedDisplay(solve) {
+      setTimerVisual("STOPPED");
+      if (isTimeHiddenAll()) {
+        timerDisplayEl.className = TIMER_TXT_CLASS;
+        if (solve.penalty === "DNF") {
+          setTimerTextIfChanged("✕ DNF");
+          timerDisplayEl.classList.add("text-[var(--error)]");
+        } else if (solve.penalty === "+2") {
+          setTimerTextIfChanged("✓ 記録済 (+2)");
+          timerDisplayEl.classList.add("text-[var(--warning)]");
+        } else {
+          setTimerTextIfChanged("✓ 記録済");
+          timerDisplayEl.classList.add("text-[var(--success)]");
+        }
+        inspectionSubEl.textContent = "タイム非表示中（すべて表示に戻すと確認できます）";
+      } else {
+        setTimerTextIfChanged(formatSolve(solve));
+        if (solve.penalty === "DNF") timerDisplayEl.classList.add("text-[var(--error)]");
+        else if (solve.penalty === "+2") timerDisplayEl.classList.add("text-[var(--warning)]");
+        const inspSecStr = typeof solve.inspectionMs === "number" ? `${(solve.inspectionMs / 1000).toFixed(2)}s` : "-";
+        inspectionSubEl.textContent = `インスペクション: ${inspSecStr}`;
+      }
+      quickActionsEl.classList.remove("opacity-0", "pointer-events-none");
     }
 
     function enterInspectionReady() {
@@ -848,28 +981,37 @@
           }
 
           if (rem > 0) {
-            timerDisplayEl.textContent = Math.ceil(rem).toString();
             inspectionPenalty = "OK";
-            if (state === "INSPECTION" && rem <= 3) {
-              timerDisplayEl.classList.remove("text-[var(--warning)]");
-              timerDisplayEl.classList.add("text-[var(--error)]");
-            }
           } else if (elapsed < 17) {
-            timerDisplayEl.textContent = "+2";
             inspectionPenalty = "+2";
-            if (state === "INSPECTION") {
-              timerDisplayEl.classList.remove("text-[var(--warning)]");
-              timerDisplayEl.classList.add("text-[var(--error)]");
-            }
           } else {
-            timerDisplayEl.textContent = "DNF";
             inspectionPenalty = "DNF";
           }
-          inspectionSubEl.textContent = `経過: ${elapsed.toFixed(1)}s`;
+
+          if (!isTimeHiddenRunning()) {
+            if (rem > 0) {
+              setTimerTextIfChanged(Math.ceil(rem).toString());
+              if (state === "INSPECTION" && rem <= 3) {
+                timerDisplayEl.classList.remove("text-[var(--warning)]");
+                timerDisplayEl.classList.add("text-[var(--error)]");
+              }
+            } else if (elapsed < 17) {
+              setTimerTextIfChanged("+2");
+              timerDisplayEl.classList.remove("text-[var(--warning)]", "text-[var(--success)]");
+              timerDisplayEl.classList.add("text-[var(--error)]");
+            } else {
+              setTimerTextIfChanged("DNF");
+              timerDisplayEl.classList.remove("text-[var(--warning)]", "text-[var(--success)]");
+              timerDisplayEl.classList.add("text-[var(--error)]");
+            }
+            inspectionSubEl.textContent = `経過: ${elapsed.toFixed(1)}s`;
+          }
         } else {
-          timerDisplayEl.textContent = elapsed.toFixed(1);
           inspectionPenalty = "OK";
-          inspectionSubEl.textContent = "無制限インスペクション";
+          if (!isTimeHiddenRunning()) {
+            setTimerTextIfChanged(elapsed.toFixed(1));
+            inspectionSubEl.textContent = "無制限インスペクション";
+          }
         }
         rafId = requestAnimationFrame(tick);
       };
@@ -898,8 +1040,10 @@
 
       const tick = () => {
         if (state !== "RUNNING") return;
-        const elapsed = performance.now() - solveStart;
-        timerDisplayEl.textContent = formatTime(elapsed);
+        if (!isTimeHiddenRunning()) {
+          const elapsed = performance.now() - solveStart;
+          setTimerTextIfChanged(formatTime(elapsed));
+        }
         rafId = requestAnimationFrame(tick);
       };
       rafId = requestAnimationFrame(tick);
@@ -907,6 +1051,7 @@
 
     function stopSolve() {
       if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
       const rawMs = Math.max(10, Math.round(performance.now() - solveStart));
       state = "STOPPED";
 
@@ -921,42 +1066,97 @@
       solves.push(solve);
       saveSolves();
 
-      timerDisplayEl.textContent = formatSolve(solve);
-      if (solve.penalty === "DNF") timerDisplayEl.classList.add("text-[var(--error)]");
-      else if (solve.penalty === "+2") timerDisplayEl.classList.add("text-[var(--warning)]");
+      renderStoppedDisplay(solve);
+      refreshScramble();
+      renderStatsAndHistory();
+    }
 
-      setTimerVisual("STOPPED");
-      inspectionSubEl.textContent = `インスペクション: ${(lastInspectionMs / 1000).toFixed(2)}s`;
-      quickActionsEl.classList.remove("opacity-0", "pointer-events-none");
-
+    let lastNoTimeRecordAt = 0;
+    function recordNoTimeSolve(penalty) {
+      const now = performance.now();
+      if (now - lastNoTimeRecordAt < 140) return;
+      lastNoTimeRecordAt = now;
+      const solve = {
+        id: Date.now(),
+        timeMs: null,
+        inspectionMs: null,
+        penalty: penalty === "DNF" ? "DNF" : "OK",
+        scramble: currentScramble,
+        mode: String(SCRAMBLE_LENGTH)
+      };
+      solves.push(solve);
+      saveSolves();
       refreshScramble();
       renderStatsAndHistory();
     }
 
     function cancelTimer() {
       if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
       state = "IDLE";
-      timerDisplayEl.textContent = "0.00";
+      quickActionsEl.classList.add("opacity-0", "pointer-events-none");
       setTimerVisual("IDLE");
     }
 
     // Keyboard Controls:
-    // 1st Space press (IDLE/STOPPED) -> INSPECTION_READY
-    // 1st Space release (INSPECTION_READY) -> INSPECTION
-    // 2nd Space press (INSPECTION) -> READY (ends inspection)
-    // 2nd Space release (READY) -> RUNNING (starts solve)
-    // Any key press (RUNNING) -> STOPPED
+    // Timed modes (wca / free):
+    //   1st Space press (IDLE/STOPPED) -> INSPECTION_READY
+    //   1st Space release (INSPECTION_READY) -> INSPECTION
+    //   2nd Space press (INSPECTION) -> READY (ends inspection)
+    //   2nd Space release (READY) -> RUNNING (starts solve)
+    //   Any non-modifier key press (RUNNING) -> STOPPED
+    //   STOPPED shortcuts: D (DNF toggle), 2 (+2 toggle when visible), Backspace/Delete (delete latest)
+    // No-Time mode (notime):
+    //   Enter -> Record OK, D -> Record DNF, N -> Next scramble (Space intentionally disabled)
     document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const colorPanel = document.getElementById("colorSettingsPanel");
+      if (colorPanel && !colorPanel.classList.contains("hidden")) {
+        if (e.code === "Escape") {
+          colorPanel.classList.add("hidden");
+        }
+        return;
+      }
+
       if (e.target.tagName === "INPUT" && e.target.type === "text") {
         return;
       }
       if (e.target.tagName === "SELECT" || e.target.tagName === "INPUT") {
-        if (e.code === "Space") e.target.blur();
-        else return;
+        if (e.code === "Space" || e.code === "Enter") {
+          e.target.blur();
+          if (e.code === "Enter") return; // prevent SELECT confirmation Enter from recording a solve
+        } else {
+          return;
+        }
+      }
+
+      if (e.repeat) return;
+
+      if (isNoTimeMode()) {
+        if (e.code === "Space") {
+          e.preventDefault();
+          return;
+        }
+        if (e.code === "Enter") {
+          e.preventDefault();
+          recordNoTimeSolve("OK");
+          return;
+        }
+        if (e.code === "KeyD") {
+          e.preventDefault();
+          recordNoTimeSolve("DNF");
+          return;
+        }
+        if (e.code === "KeyN") {
+          e.preventDefault();
+          refreshScramble();
+          return;
+        }
+        return;
       }
 
       if (e.code === "Space") e.preventDefault();
-      if (e.repeat) return;
 
       if (e.code === "Escape") {
         if (state === "INSPECTION_READY" || state === "INSPECTION" || state === "READY" || state === "RUNNING") {
@@ -965,14 +1165,33 @@
         return;
       }
 
-      if (e.code === "KeyN" && (state === "IDLE" || state === "STOPPED")) {
-        refreshScramble();
+      if (state === "RUNNING") {
+        if (e.key === "Shift" || e.key === "Control" || e.key === "Alt" || e.key === "Meta") return;
+        justStopped = true;
+        stopSolve();
         return;
       }
 
-      if (state === "RUNNING") {
-        justStopped = true;
-        stopSolve();
+      if (state === "STOPPED" && solves.length > 0) {
+        if (e.code === "KeyD") {
+          e.preventDefault();
+          window.setPenalty(solves.length - 1, "DNF");
+          return;
+        }
+        if ((e.code === "Digit2" || e.code === "Numpad2") && !isTimeHiddenAll()) {
+          e.preventDefault();
+          window.setPenalty(solves.length - 1, "+2");
+          return;
+        }
+        if (e.code === "Backspace" || e.code === "Delete") {
+          e.preventDefault();
+          window.deleteSolve(solves.length - 1);
+          return;
+        }
+      }
+
+      if (e.code === "KeyN" && (state === "IDLE" || state === "STOPPED")) {
+        refreshScramble();
         return;
       }
 
@@ -987,6 +1206,7 @@
     });
 
     document.addEventListener("keyup", (e) => {
+      if (isNoTimeMode()) return;
       if (justStopped) {
         justStopped = false;
         return;
@@ -1000,9 +1220,11 @@
       }
     });
 
-    // Pointer / Touch Support on Timer Area
-    timerAreaEl.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button")) return;
+    // Pointer / Touch Support on Timed Area (with out-of-bounds release handling)
+    let timerPointerActive = false;
+    timedCenterUIEl.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button") || isNoTimeMode()) return;
+      timerPointerActive = true;
       if (state === "RUNNING") {
         justStopped = true;
         stopSolve();
@@ -1013,8 +1235,9 @@
       }
     });
 
-    timerAreaEl.addEventListener("pointerup", (e) => {
-      if (e.target.closest("button")) return;
+    window.addEventListener("pointerup", () => {
+      if (!timerPointerActive || isNoTimeMode()) return;
+      timerPointerActive = false;
       if (justStopped) {
         justStopped = false;
         return;
@@ -1026,6 +1249,19 @@
       }
     });
 
+    window.addEventListener("pointercancel", () => {
+      if (!timerPointerActive) return;
+      timerPointerActive = false;
+      if (state === "INSPECTION_READY" || state === "READY") {
+        cancelTimer();
+      }
+    });
+
+    window.addEventListener("blur", () => {
+      justStopped = false;
+      timerPointerActive = false;
+    });
+
     // ==========================================
     // 4. Statistics & Rendering
     // ==========================================
@@ -1033,6 +1269,7 @@
       if (slice.length < 3) return null;
       const trim = slice.length >= 20 ? Math.ceil(slice.length * 0.05) : 1;
       const vals = slice.map(getEffectiveMs);
+      if (vals.some((v) => v === null)) return null;
       const dnfCount = vals.filter((v) => v === Infinity).length;
       if (dnfCount > trim) return Infinity;
       const sorted = [...vals].sort((a, b) => a - b);
@@ -1040,35 +1277,6 @@
       const sum = trimmed.reduce((acc, v) => acc + v, 0);
       return sum / trimmed.length;
     }
-
-    let metricMode = "inspection"; // "inspection" | "solve"
-    const statModeToggleEl = document.getElementById("statModeToggle");
-    const chartModeToggleEl = document.getElementById("chartModeToggle");
-    const statSubMeanLabelEl = document.getElementById("statSubMeanLabel");
-
-    function updateMetricModeLabels() {
-      const label = metricMode === "inspection" ? "インスペクション" : "ソルブ";
-      if (statModeToggleEl) statModeToggleEl.textContent = `対象: ${label}`;
-      if (chartModeToggleEl) chartModeToggleEl.textContent = `表示: ${label}`;
-      if (statSubMeanLabelEl) {
-        statSubMeanLabelEl.textContent = metricMode === "inspection" ? "Mean Solve" : "Mean Insp.";
-      }
-    }
-
-    function toggleMetricMode(e) {
-      if (e && e.target) e.target.blur();
-      metricMode = metricMode === "inspection" ? "solve" : "inspection";
-      updateMetricModeLabels();
-      renderStatsAndHistory();
-    }
-
-    function syncDefaultMetricMode() {
-      metricMode = inspectionModeEl.value === "wca" ? "solve" : "inspection";
-      updateMetricModeLabels();
-    }
-
-    if (statModeToggleEl) statModeToggleEl.addEventListener("click", toggleMetricMode);
-    if (chartModeToggleEl) chartModeToggleEl.addEventListener("click", toggleMetricMode);
 
     function calcInspectionAverage(slice) {
       if (slice.length < 3) return null;
@@ -1082,69 +1290,253 @@
       return trimmed.reduce((acc, v) => acc + v, 0) / trimmed.length;
     }
 
+    // Harmonic mean with DNF = Infinity (1 / Infinity = 0)
+    function calcHarmonicMean(slice, getValFn) {
+      if (!slice || slice.length === 0) return null;
+      let invSum = 0;
+      for (const s of slice) {
+        const v = getValFn(s);
+        if (v === null) return null;
+        if (v !== Infinity) {
+          invSum += 1 / Math.max(10, v);
+        }
+      }
+      if (invSum === 0) return Infinity; // all DNF
+      return slice.length / invSum;
+    }
+
+    function calcSuccessStats(list) {
+      const total = list.length;
+      const ok = list.filter((s) => s.penalty !== "DNF").length;
+      const rateAll = total > 0 ? (ok / total) * 100 : null;
+
+      const last12 = list.slice(-12);
+      const ok12 = last12.filter((s) => s.penalty !== "DNF").length;
+      const rate12 = last12.length > 0 ? (ok12 / last12.length) * 100 : null;
+
+      const last25 = list.slice(-25);
+      const ok25 = last25.filter((s) => s.penalty !== "DNF").length;
+      const rate25 = last25.length > 0 ? (ok25 / last25.length) * 100 : null;
+
+      let bestStreak = 0;
+      let curStreak = 0;
+      for (const s of list) {
+        if (s.penalty !== "DNF") {
+          curStreak++;
+          if (curStreak > bestStreak) bestStreak = curStreak;
+        } else {
+          curStreak = 0;
+        }
+      }
+      return {
+        total, ok, rateAll,
+        n12: last12.length, ok12, rate12,
+        n25: last25.length, ok25, rate25,
+        curStreak, bestStreak
+      };
+    }
+
+    let metricMode = "inspection"; // "inspection" | "solve"
+    const statModeToggleEl = document.getElementById("statModeToggle");
+    const chartModeToggleEl = document.getElementById("chartModeToggle");
+    const chartViewTabsEl = document.getElementById("chartViewTabs");
+    const chartLegendEl = document.getElementById("chartLegend");
+
+    function updateMetricModeLabels() {
+      const label = metricMode === "inspection" ? "インスペクション" : "ソルブ";
+      if (statModeToggleEl) statModeToggleEl.textContent = `対象: ${label}`;
+      if (chartModeToggleEl) chartModeToggleEl.textContent = `表示: ${label}`;
+    }
+
+    function toggleMetricMode(e) {
+      if (e && e.currentTarget) e.currentTarget.blur();
+      metricMode = metricMode === "inspection" ? "solve" : "inspection";
+      updateMetricModeLabels();
+      renderStatsAndHistory();
+    }
+
+    function syncDefaultMetricMode() {
+      metricMode = inspectionModeEl.value === "wca" ? "solve" : "inspection";
+      updateMetricModeLabels();
+    }
+
+    if (statModeToggleEl) statModeToggleEl.addEventListener("click", toggleMetricMode);
+    if (chartModeToggleEl) chartModeToggleEl.addEventListener("click", toggleMetricMode);
+
+    function statCardHtml(label, value, sub, borderAccent = "", valColor = "", titleAttr = "") {
+      const titleHtml = titleAttr ? ` title="${titleAttr}"` : "";
+      return `
+        <div class="bg-[var(--background)]/70 border border-[var(--border)] rounded-lg py-1.5 px-1 ${borderAccent}"${titleHtml}>
+          <div class="text-[10px] text-[var(--muted-foreground)] leading-tight truncate">${label}</div>
+          <div class="font-mono tabular-nums text-sm font-bold leading-tight mt-0.5 ${valColor}">${value}</div>
+          <div class="font-mono tabular-nums text-[10px] text-[var(--muted-foreground)] leading-tight mt-0.5 truncate">${sub || "&nbsp;"}</div>
+        </div>
+      `;
+    }
+
+    function renderCenterMode() {
+      const noTime = isNoTimeMode();
+      timedCenterUIEl.classList.toggle("hidden", noTime);
+      noTimeCenterUIEl.classList.toggle("hidden", !noTime);
+      const btnPlus2El = document.getElementById("btnPlus2");
+      if (btnPlus2El) btnPlus2El.classList.toggle("hidden", isTimeHiddenAll());
+
+      if (noTime) {
+        const st = calcSuccessStats(solves);
+        noTimeStreakPillEl.textContent = `現在 ${st.curStreak}連続 (Best ${st.bestStreak})`;
+        if (solves.length > 0) {
+          const lastIdx = solves.length - 1;
+          const last = solves[lastIdx];
+          const isDnf = last.penalty === "DNF";
+          noTimeLastBarEl.innerHTML = `
+            <span class="px-1.5 py-0.5 rounded bg-[var(--background)] border border-[var(--border)]">直前 #${solves.length}: <strong class="${isDnf ? 'text-[var(--error)]' : 'text-[var(--success)]'}">${isDnf ? '✕ DNF' : '✓ 成功'}</strong></span>
+            <button type="button" onclick="this.blur(); setPenalty(${lastIdx}, 'DNF')" class="px-2 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer text-[var(--foreground)]">${isDnf ? '成功に修正' : 'DNFに修正'}</button>
+            <button type="button" onclick="this.blur(); deleteSolve(${lastIdx})" class="px-2 py-0.5 rounded border border-[var(--border)] text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer">直前を取消</button>
+          `;
+        } else {
+          noTimeLastBarEl.innerHTML = `<span>Spaceキーは誤爆防止のため無効です</span>`;
+        }
+      } else if (state === "STOPPED" && solves.length > 0) {
+        renderStoppedDisplay(solves[solves.length - 1]);
+      } else if (state === "IDLE") {
+        setTimerVisual("IDLE");
+      }
+    }
+
     function renderStatsAndHistory() {
-      const validSolves = solves.map(getEffectiveMs).filter((v) => v !== Infinity);
-      const inspTimes = solves.map(getEffectiveInspectionMs).filter((v) => v !== null && v !== Infinity);
-      document.getElementById("statCount").textContent = `${validSolves.length} / ${solves.length}`;
+      const hideTime = isTimeHiddenAll();
+      const st = calcSuccessStats(solves);
+      const getValFn = metricMode === "inspection" ? getEffectiveInspectionMs : getEffectiveMs;
+      const calcAoFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
 
-      const targetTimes = metricMode === "inspection" ? inspTimes : validSolves;
-      if (targetTimes.length > 0) {
-        const best = Math.min(...targetTimes);
-        const mean = targetTimes.reduce((a, b) => a + b, 0) / targetTimes.length;
-        document.getElementById("statBest").textContent = formatTime(best);
-        document.getElementById("statMean").textContent = formatTime(mean);
+      if (statModeToggleEl) statModeToggleEl.classList.toggle("hidden", hideTime);
+      if (stabilityOnlyBadgeEl) stabilityOnlyBadgeEl.classList.toggle("hidden", !hideTime);
+
+      const has12 = solves.length >= 12;
+      const has25 = solves.length >= 25;
+      const rAll = st.rateAll === null ? "-" : `${st.rateAll.toFixed(1)}%`;
+      const r12Val = has12 ? `${st.rate12.toFixed(0)}%` : "-";
+      const r12Sub = has12 ? `${st.ok12} / 12` : `あと${12 - solves.length}回`;
+      const r25Val = has25 ? `${st.rate25.toFixed(0)}%` : "-";
+      const r25Sub = has25 ? `${st.ok25} / 25` : `あと${25 - solves.length}回`;
+
+      // 1. Stats 2x3 Grid (A-plan unified layout / Stability-only layout)
+      if (hideTime) {
+        const dnfCount = st.total - st.ok;
+        const dnfPct = st.total > 0 ? `${((dnfCount / st.total) * 100).toFixed(1)}%` : "-";
+
+        statsGridEl.innerHTML = [
+          statCardHtml("全体成功率", rAll, `${st.ok} / ${st.total}`, "border-t-2 border-t-[var(--success)]", "text-[var(--success)]"),
+          statCardHtml("直近12回", r12Val, r12Sub, "border-t-2 border-t-[var(--primary)]", has12 ? "text-[var(--primary)]" : ""),
+          statCardHtml("直近25回", r25Val, r25Sub, "border-t-2 border-t-[var(--chart-1)]"),
+          statCardHtml("現在連続", `${st.curStreak}`, "回", "border-t-2 border-t-[var(--warning)]", "text-[var(--warning)]"),
+          statCardHtml("最大連続", `${st.bestStreak}`, "Best"),
+          statCardHtml("DNF数", `${dnfCount}`, dnfPct, "", dnfCount > 0 ? "text-[var(--error)]" : "")
+        ].join("");
       } else {
-        document.getElementById("statBest").textContent = "-";
-        document.getElementById("statMean").textContent = "-";
+        const validSolves = solves.map(getEffectiveMs).filter((v) => v !== null && v !== Infinity);
+        const inspTimes = solves.map(getEffectiveInspectionMs).filter((v) => v !== null && v !== Infinity);
+        const targetTimes = metricMode === "inspection" ? inspTimes : validSolves;
+        const subTimes = metricMode === "inspection" ? validSolves : inspTimes;
+
+        const bestStr = targetTimes.length > 0 ? formatTime(Math.min(...targetTimes)) : "-";
+        const meanStr = targetTimes.length > 0 ? formatTime(targetTimes.reduce((a, b) => a + b, 0) / targetTimes.length) : "-";
+        const subMeanStr = subTimes.length > 0 ? formatTime(subTimes.reduce((a, b) => a + b, 0) / subTimes.length) : "-";
+
+        const hm5 = solves.length >= 5 ? calcHarmonicMean(solves.slice(-5), getValFn) : null;
+        const hm12 = solves.length >= 12 ? calcHarmonicMean(solves.slice(-12), getValFn) : null;
+        const ao12 = solves.length >= 12 ? calcAoFn(solves.slice(-12)) : null;
+        const subPrefix = metricMode === "inspection" ? "Solve" : "Insp.";
+
+        statsGridEl.innerHTML = [
+          statCardHtml("成功率", rAll, `${st.ok} / ${st.total}`, "border-t-2 border-t-[var(--success)]", "text-[var(--success)]", "全体の成功率 (有効数 / 総数)"),
+          statCardHtml("直近12回", r12Val, r12Sub, "border-t-2 border-t-[var(--chart-2)]", "", "直近12回の成功率"),
+          statCardHtml("連続成功", `${st.curStreak}`, `Best ${st.bestStreak}`, "", "", "現在の連続成功数と最大記録"),
+          statCardHtml("HM5 (調平)", hm5 === null ? "-" : formatTime(hm5), `単発Best ${bestStr}`, "border-t-2 border-t-[var(--chart-1)]", "", "直近5回の調和平均 (DNF=∞) / 下段は単発Best"),
+          statCardHtml("HM12 (調平)", hm12 === null ? "-" : formatTime(hm12), ao12 === null ? "Ao12 -" : `Ao12 ${formatTime(ao12)}`, "border-t-2 border-t-[var(--primary)]", "text-[var(--primary)]", "直近12回の調和平均 (DNF=∞) / 下段は従来のAo12"),
+          statCardHtml("Mean", meanStr, `${subPrefix} ${subMeanStr}`, "border-t-2 border-t-[var(--warning)]", "text-[var(--warning)]", "有効試行の平均 / 下段はサブ指標の平均")
+        ].join("");
       }
 
-      const subTimes = metricMode === "inspection" ? validSolves : inspTimes;
-      if (subTimes.length > 0) {
-        const subMean = subTimes.reduce((a, b) => a + b, 0) / subTimes.length;
-        document.getElementById("statInspMean").textContent = formatTime(subMean);
+      // 2. History Table (latest first)
+      if (hideTime) {
+        historyHeadEl.innerHTML = `
+          <tr>
+            <th class="py-1.5 px-2 font-medium">#</th>
+            <th class="py-1.5 px-1.5 font-medium">結果</th>
+            <th class="py-1.5 px-1.5 font-medium">直近12回</th>
+            <th class="py-1.5 px-1.5 font-medium text-right">操作</th>
+          </tr>
+        `;
       } else {
-        document.getElementById("statInspMean").textContent = "-";
+        const hmColLabel = metricMode === "inspection" ? "HM5(Insp)" : "HM5(Solve)";
+        historyHeadEl.innerHTML = `
+          <tr>
+            <th class="py-1.5 px-2 font-medium">#</th>
+            <th class="py-1.5 px-1.5 font-medium">Solve</th>
+            <th class="py-1.5 px-1.5 font-medium">Insp.</th>
+            <th class="py-1.5 px-1.5 font-medium">${hmColLabel}</th>
+            <th class="py-1.5 px-1.5 font-medium text-right">操作</th>
+          </tr>
+        `;
       }
 
-      const calcFn = metricMode === "inspection" ? calcInspectionAverage : calcAverage;
-      const ao5 = solves.length >= 5 ? calcFn(solves.slice(-5)) : null;
-      const ao12 = solves.length >= 12 ? calcFn(solves.slice(-12)) : null;
-      document.getElementById("statAo5").textContent = ao5 === null ? "-" : formatTime(ao5);
-      document.getElementById("statAo12").textContent = ao12 === null ? "-" : formatTime(ao12);
-
-      // History table (latest first)
+      const colSpan = hideTime ? 4 : 5;
       const tbody = document.getElementById("historyBody");
       if (solves.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-[var(--muted-foreground)]">まだ記録がありません</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" class="py-6 text-center text-[var(--muted-foreground)]">まだ記録がありません</td></tr>`;
       } else {
         const rows = [];
         for (let i = solves.length - 1; i >= 0; i--) {
           const s = solves[i];
-          const rowAo5Val = i >= 4 ? calcFn(solves.slice(i - 4, i + 1)) : null;
-          const rowAo5 = rowAo5Val === null ? "-" : formatTime(rowAo5Val);
-          const inspStr = typeof s.inspectionMs === "number" ? `${(s.inspectionMs / 1000).toFixed(1)}s` : "-";
-          const penClass = s.penalty === "DNF" ? "text-[var(--error)]" : s.penalty === "+2" ? "text-[var(--warning)]" : "";
           const isOpen = window.expandedSolveIndex === i;
-          rows.push(`
-            <tr onclick="toggleSolveDetail(${i})" class="hover:bg-[var(--background)]/60 cursor-pointer ${isOpen ? 'bg-[var(--background)]/60' : ''}" title="クリックでスクランブルを表示">
-              <td class="py-1 px-2 text-[var(--muted-foreground)] font-mono">${i + 1}</td>
-              <td class="py-1 px-1.5 font-mono font-semibold tabular-nums ${penClass}">${formatSolve(s)}</td>
-              <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${inspStr}</td>
-              <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${rowAo5}</td>
-              <td class="py-1 px-1.5 text-right whitespace-nowrap space-x-0.5 text-[10px]">
-                <button onclick="event.stopPropagation(); setPenalty(${i}, '+2')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${s.penalty==='+2'?'bg-[var(--secondary)] font-bold':''}" title="+2">+2</button>
-                <button onclick="event.stopPropagation(); setPenalty(${i}, 'DNF')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${s.penalty==='DNF'?'bg-[var(--secondary)] font-bold':''}" title="DNF">DNF</button>
-                <button onclick="event.stopPropagation(); deleteSolve(${i})" class="px-1 py-0.5 rounded text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer" title="削除">×</button>
-              </td>
-            </tr>
-          `);
+          const isDnf = s.penalty === "DNF";
+          const isPlus2 = s.penalty === "+2";
+
+          if (hideTime) {
+            const win = solves.slice(Math.max(0, i - 11), i + 1);
+            const winOk = win.filter((x) => x.penalty !== "DNF").length;
+            const winRate = `${Math.round((winOk / win.length) * 100)}% (${winOk}/${win.length})`;
+            const resText = isDnf ? "✕ DNF" : isPlus2 ? "✓ OK(+2)" : "✓ OK";
+            const resClass = isDnf ? "text-[var(--error)]" : isPlus2 ? "text-[var(--warning)]" : "text-[var(--success)]";
+            rows.push(`
+              <tr onclick="toggleSolveDetail(${i})" class="hover:bg-[var(--background)]/60 cursor-pointer ${isOpen ? 'bg-[var(--background)]/60' : ''}" title="クリックでスクランブルを表示">
+                <td class="py-1 px-2 text-[var(--muted-foreground)] font-mono">${i + 1}</td>
+                <td class="py-1 px-1.5 font-mono font-semibold ${resClass}">${resText}</td>
+                <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${winRate}</td>
+                <td class="py-1 px-1.5 text-right whitespace-nowrap space-x-0.5 text-[10px]">
+                  <button onclick="event.stopPropagation(); this.blur(); setPenalty(${i}, 'DNF')" class="px-1.5 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${isDnf ? 'bg-[var(--secondary)] font-bold' : ''}" title="OK/DNF切替">${isDnf ? 'OKへ' : 'DNF'}</button>
+                  <button onclick="event.stopPropagation(); this.blur(); deleteSolve(${i})" class="px-1 py-0.5 rounded text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer" title="削除">×</button>
+                </td>
+              </tr>
+            `);
+          } else {
+            const rowHm5Val = i >= 4 ? calcHarmonicMean(solves.slice(i - 4, i + 1), getValFn) : null;
+            const rowHm5 = rowHm5Val === null ? "-" : formatTime(rowHm5Val);
+            const inspStr = typeof s.inspectionMs === "number" ? `${(s.inspectionMs / 1000).toFixed(1)}s` : "-";
+            const penClass = isDnf ? "text-[var(--error)]" : isPlus2 ? "text-[var(--warning)]" : "";
+            rows.push(`
+              <tr onclick="toggleSolveDetail(${i})" class="hover:bg-[var(--background)]/60 cursor-pointer ${isOpen ? 'bg-[var(--background)]/60' : ''}" title="クリックでスクランブルを表示">
+                <td class="py-1 px-2 text-[var(--muted-foreground)] font-mono">${i + 1}</td>
+                <td class="py-1 px-1.5 font-mono font-semibold tabular-nums ${penClass}">${formatSolve(s)}</td>
+                <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${inspStr}</td>
+                <td class="py-1 px-1.5 font-mono tabular-nums text-[var(--muted-foreground)]">${rowHm5}</td>
+                <td class="py-1 px-1.5 text-right whitespace-nowrap space-x-0.5 text-[10px]">
+                  <button onclick="event.stopPropagation(); this.blur(); setPenalty(${i}, '+2')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${isPlus2?'bg-[var(--secondary)] font-bold':''}" title="+2">+2</button>
+                  <button onclick="event.stopPropagation(); this.blur(); setPenalty(${i}, 'DNF')" class="px-1 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer ${isDnf?'bg-[var(--secondary)] font-bold':''}" title="DNF">DNF</button>
+                  <button onclick="event.stopPropagation(); this.blur(); deleteSolve(${i})" class="px-1 py-0.5 rounded text-[var(--error)] hover:bg-[var(--secondary)] cursor-pointer" title="削除">×</button>
+                </td>
+              </tr>
+            `);
+          }
+
           if (isOpen) {
             rows.push(`
               <tr class="bg-[var(--background)]/90">
-                <td colspan="5" class="px-2.5 py-1.5">
+                <td colspan="${colSpan}" class="px-2.5 py-1.5">
                   <div class="flex items-center justify-between gap-2">
                     <span class="font-mono text-[11px] text-[var(--foreground)] select-all break-all">${s.scramble || "-"}</span>
-                    <button onclick="event.stopPropagation(); copyScramble(${i}, this)" class="shrink-0 text-[10px] px-1.5 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">コピー</button>
+                    <button onclick="event.stopPropagation(); this.blur(); copyScramble(${i}, this)" class="shrink-0 text-[10px] px-1.5 py-0.5 rounded border border-[var(--border)] hover:bg-[var(--secondary)] cursor-pointer">コピー</button>
                   </div>
                 </td>
               </tr>
@@ -1154,6 +1546,7 @@
         tbody.innerHTML = rows.join("");
       }
 
+      renderCenterMode();
       renderChart();
     }
 
@@ -1174,45 +1567,301 @@
       }
     };
 
-    let chartView = "avg"; // "avg" | "dist"
-    const chartViewToggleEl = document.getElementById("chartViewToggle");
-    const chartLegendEl = document.getElementById("chartLegend");
+    function getEffectiveChartView() {
+      return isTimeHiddenAll() ? "rate" : chartView;
+    }
+
+    function getChartWidth(svg) {
+      const cw = svg && svg.clientWidth ? Math.round(svg.clientWidth) : 640;
+      return Math.max(360, cw);
+    }
+
+    function setChartMessage(svg, msg) {
+      const W = getChartWidth(svg);
+      svg.setAttribute("viewBox", `0 0 ${W} 120`);
+      svg.innerHTML = `<text x="${(W / 2).toFixed(1)}" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">${msg}</text>`;
+    }
 
     function updateChartHeader() {
-      if (chartViewToggleEl) {
-        chartViewToggleEl.textContent = chartView === "avg" ? "推移: Ao5/12/50" : "分布: タイム帯";
+      const hideTime = isTimeHiddenAll();
+      const activeView = getEffectiveChartView();
+
+      if (chartModeToggleEl) {
+        chartModeToggleEl.classList.toggle("hidden", hideTime || activeView === "rate");
       }
+
+      if (chartViewTabsEl) {
+        chartViewTabsEl.querySelectorAll("button[data-chart-view]").forEach((btn) => {
+          const v = btn.dataset.chartView;
+          const hidden = hideTime && v !== "rate";
+          btn.classList.toggle("hidden", hidden);
+          const active = v === activeView;
+          btn.classList.toggle("bg-[var(--primary)]", active);
+          btn.classList.toggle("text-[var(--primary-foreground)]", active);
+          btn.classList.toggle("text-[var(--muted-foreground)]", !active);
+          btn.classList.toggle("hover:bg-[var(--secondary)]", !active);
+        });
+      }
+
       if (chartLegendEl) {
-        if (chartView === "avg") {
+        if (activeView === "hm") {
+          chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">― HM5</span><span class="text-[var(--chart-2)]">― HM12</span><span class="text-[var(--success)]">― HM50</span>`;
+        } else if (activeView === "rate") {
+          chartLegendEl.innerHTML = `<span class="text-[var(--chart-2)]">― 直近12回</span><span class="text-[var(--success)]">― 直近25回</span><span class="text-[var(--muted-foreground)]">┄ 90%</span>`;
+        } else if (activeView === "ao") {
           chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">― Ao5</span><span class="text-[var(--chart-2)]">― Ao12</span><span class="text-[var(--success)]">― Ao50</span>`;
         } else {
-          chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">■ 全体</span><span class="text-[var(--chart-2)]">■ 直近12回</span>`;
+          chartLegendEl.innerHTML = `<span class="text-[var(--chart-1)]">■ 成功</span><span class="text-[var(--error)]">■ DNF</span>`;
         }
       }
     }
 
-    if (chartViewToggleEl) {
-      chartViewToggleEl.addEventListener("click", (e) => {
-        e.target.blur();
-        chartView = chartView === "avg" ? "dist" : "avg";
-        updateChartHeader();
-        renderChart();
+    if (chartViewTabsEl) {
+      chartViewTabsEl.querySelectorAll("button[data-chart-view]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.currentTarget.blur();
+          if (isTimeHiddenAll()) return;
+          chartView = e.currentTarget.dataset.chartView;
+          saveSettings();
+          renderChart();
+        });
       });
     }
 
     function renderChart() {
       updateChartHeader();
-      if (chartView === "dist") {
-        renderDistChart();
-      } else {
+      const activeView = getEffectiveChartView();
+      if (activeView === "hm") {
+        renderHarmonicTrendChart();
+      } else if (activeView === "rate") {
+        renderSuccessRateChart();
+      } else if (activeView === "ao") {
         renderAvgTrendChart();
+      } else {
+        renderDistChart();
       }
+    }
+
+    let lastChartSvgWidth = 0;
+    const trendChartEl = document.getElementById("trendChart");
+    if (trendChartEl && typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => {
+        const w = Math.round(trendChartEl.clientWidth);
+        if (w > 0 && Math.abs(w - lastChartSvgWidth) >= 4) {
+          lastChartSvgWidth = w;
+          renderChart();
+        }
+      }).observe(trendChartEl);
     }
 
     function calcProvisionalMean(slice, getValFn) {
       const valid = slice.map(getValFn).filter((v) => v !== null && v !== Infinity);
       if (valid.length === 0) return null;
       return valid.reduce((acc, v) => acc + v, 0) / valid.length;
+    }
+
+    function drawTrendSeriesSvg(svg, seriesSpecs, options = {}) {
+      const allPts = seriesSpecs.flatMap((s) => s.pts);
+      const finiteVals = allPts.map((p) => p.val).filter((v) => v !== Infinity && v != null);
+
+      if (allPts.length < 2 || finiteVals.length === 0) {
+        setChartMessage(svg, options.emptyText || "有効なデータがないため推移を表示できません");
+        return;
+      }
+
+      const W = getChartWidth(svg), H = 120, padL = 38, padR = 12, padT = 10, padB = 14;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      let yMin, yMax, step;
+      if (options.fixedRange) {
+        ({ yMin, yMax, step } = options.fixedRange);
+      } else {
+        const minV = Math.min(...finiteVals);
+        const maxV = Math.max(...finiteVals);
+        const stepCandidates = [200, 500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
+        const rawSpan = Math.max(400, maxV - minV);
+        const targetStep = rawSpan / 3;
+        step = stepCandidates.find((c) => c >= targetStep) || Math.ceil(targetStep / 60000) * 60000;
+        yMin = Math.max(0, Math.floor(minV / step) * step);
+        yMax = Math.ceil(maxV / step) * step;
+        if (yMax <= yMin) yMax = yMin + step;
+      }
+
+      const minIdx = Math.min(...allPts.map((p) => p.idx));
+      const maxIdx = Math.max(...allPts.map((p) => p.idx));
+      const idxSpan = Math.max(1, maxIdx - minIdx);
+      const xOf = (i) => padL + ((i - minIdx) / idxSpan) * plotW;
+      const yOf = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+      let html = "";
+      for (let v = yMin; v <= yMax + 1e-6; v += step) {
+        const y = yOf(v);
+        const label = options.yUnit === "%"
+          ? `${Math.round(v)}%`
+          : (step < 1000 ? `${(v / 1000).toFixed(1)}s` : `${Math.round(v / 1000)}s`);
+        html += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-dasharray="3 3" stroke-width="1" />`;
+        html += `<text x="${padL - 5}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">${label}</text>`;
+      }
+
+      if (Array.isArray(options.targetLines)) {
+        for (const tl of options.targetLines) {
+          const y = yOf(tl.val);
+          html += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="${tl.color}" stroke-dasharray="5 3" stroke-width="1.2" opacity="0.65" />`;
+        }
+      }
+
+      html += `<text x="${padL}" y="${H - 2}" text-anchor="start" fill="var(--muted-foreground)" font-size="10">#${minIdx + 1}</text>`;
+      html += `<text x="${W - padR}" y="${H - 2}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">#${maxIdx + 1}</text>`;
+
+      for (const spec of seriesSpecs) {
+        const { pts, color, strokeWidth } = spec;
+        if (pts.length === 0) continue;
+
+        const blocks = [];
+        let curr = [];
+        for (const p of pts) {
+          if (p.val === Infinity) {
+            if (curr.length > 0) {
+              blocks.push(curr);
+              curr = [];
+            }
+          } else {
+            curr.push(p);
+          }
+        }
+        if (curr.length > 0) blocks.push(curr);
+
+        for (let b = 0; b < blocks.length - 1; b++) {
+          const prev = blocks[b][blocks[b].length - 1];
+          const next = blocks[b + 1][0];
+          html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
+        }
+
+        if (blocks.length > 0 && pts[pts.length - 1].val === Infinity) {
+          const lastBlock = blocks[blocks.length - 1];
+          const lastFinite = lastBlock[lastBlock.length - 1];
+          const endIdx = pts[pts.length - 1].idx;
+          if (endIdx > lastFinite.idx) {
+            const y = yOf(lastFinite.val).toFixed(1);
+            html += `<line x1="${xOf(lastFinite.idx).toFixed(1)}" y1="${y}" x2="${xOf(endIdx).toFixed(1)}" y2="${y}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
+          }
+        }
+
+        for (const block of blocks) {
+          if (block.length === 1) {
+            const p = block[0];
+            if (p.provisional) {
+              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${Math.max(1.5, strokeWidth / 2).toFixed(1)}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.65" />`;
+            } else {
+              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${(strokeWidth / 2).toFixed(1)}" fill="${color}" />`;
+            }
+            continue;
+          }
+
+          let runPts = [block[0]];
+          let runDashed = null;
+          const flushRun = () => {
+            if (runPts.length < 2) return;
+            const path = runPts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
+            if (runDashed) {
+              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${Math.max(1.5, strokeWidth - 0.5)}" stroke-dasharray="3 3" opacity="0.65" stroke-linecap="round" stroke-linejoin="round" />`;
+            } else {
+              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
+            }
+          };
+
+          for (let k = 1; k < block.length; k++) {
+            const prev = block[k - 1];
+            const next = block[k];
+            const isDashed = Boolean(prev.provisional || next.provisional);
+            if (runDashed === null) {
+              runDashed = isDashed;
+              runPts.push(next);
+            } else if (runDashed === isDashed) {
+              runPts.push(next);
+            } else {
+              flushRun();
+              runPts = [prev, next];
+              runDashed = isDashed;
+            }
+          }
+          flushRun();
+        }
+      }
+
+      svg.innerHTML = html;
+    }
+
+    function renderHarmonicTrendChart() {
+      const svg = document.getElementById("trendChart");
+      const getValFn = metricMode === "inspection" ? getEffectiveInspectionMs : getEffectiveMs;
+
+      const hm5All = [];
+      const hm12All = [];
+      const hm50All = [];
+      for (let i = 4; i < solves.length; i++) {
+        const v5 = calcHarmonicMean(solves.slice(i - 4, i + 1), getValFn);
+        if (v5 !== null) hm5All.push({ idx: i, val: v5, provisional: false });
+        if (i >= 11) {
+          const v12 = calcHarmonicMean(solves.slice(i - 11, i + 1), getValFn);
+          if (v12 !== null) hm12All.push({ idx: i, val: v12, provisional: false });
+        }
+        if (i >= 49) {
+          const v50 = calcHarmonicMean(solves.slice(i - 49, i + 1), getValFn);
+          if (v50 !== null) hm50All.push({ idx: i, val: v50, provisional: false });
+        }
+      }
+
+      if (hm5All.length < 2) {
+        setChartMessage(svg, "6回以上記録すると調和平均 (HM5 / HM12 / HM50) 推移が表示されます");
+        return;
+      }
+
+      drawTrendSeriesSvg(svg, [
+        { pts: hm5All, color: "var(--chart-1)", strokeWidth: 2 },
+        { pts: hm12All, color: "var(--chart-2)", strokeWidth: 2.5 },
+        { pts: hm50All, color: "var(--success)", strokeWidth: 2.5 }
+      ], {
+        emptyText: "有効な記録がないため調和平均推移を表示できません"
+      });
+    }
+
+    function renderSuccessRateChart() {
+      const svg = document.getElementById("trendChart");
+      if (solves.length < 5) {
+        setChartMessage(svg, "5回以上記録すると成功率推移が表示されます");
+        return;
+      }
+
+      const r12 = [];
+      const r25 = [];
+      for (let i = 3; i < solves.length; i++) {
+        const s12 = solves.slice(Math.max(0, i - 11), i + 1);
+        r12.push({
+          idx: i,
+          val: (s12.filter((x) => x.penalty !== "DNF").length / s12.length) * 100,
+          provisional: false
+        });
+        if (i >= 14) {
+          const s25 = solves.slice(Math.max(0, i - 24), i + 1);
+          r25.push({
+            idx: i,
+            val: (s25.filter((x) => x.penalty !== "DNF").length / s25.length) * 100,
+            provisional: false
+          });
+        }
+      }
+
+      drawTrendSeriesSvg(svg, [
+        { pts: r12, color: "var(--chart-2)", strokeWidth: 2.2 },
+        { pts: r25, color: "var(--success)", strokeWidth: 2.5 }
+      ], {
+        yUnit: "%",
+        fixedRange: { yMin: 0, yMax: 100, step: 25 },
+        targetLines: [{ val: 90, color: "var(--primary)" }]
+      });
     }
 
     function renderAvgTrendChart() {
@@ -1247,152 +1896,32 @@
       }
 
       if (ao5All.length < 2) {
-        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">6回以上記録すると Ao5 / Ao12 / Ao50 推移が表示されます</text>`;
+        setChartMessage(svg, "6回以上記録すると Ao5 / Ao12 / Ao50 推移が表示されます");
         return;
       }
 
-      const allVals = [
-        ...ao5All.map((p) => p.val),
-        ...ao12All.map((p) => p.val),
-        ...ao50All.map((p) => p.val)
-      ].filter((v) => v !== Infinity);
-
-      if (allVals.length === 0) {
-        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">有効な平均がないため推移を表示できません</text>`;
-        return;
-      }
-
-      const W = 360, H = 120, padL = 34, padR = 10, padT = 10, padB = 14;
-      const plotW = W - padL - padR;
-      const plotH = H - padT - padB;
-
-      const minV = Math.min(...allVals);
-      const maxV = Math.max(...allVals);
-
-      const stepCandidates = [200, 500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
-      const rawSpan = Math.max(400, maxV - minV);
-      const targetStep = rawSpan / 3;
-      const step = stepCandidates.find((c) => c >= targetStep) || Math.ceil(targetStep / 60000) * 60000;
-      const yMin = Math.max(0, Math.floor(minV / step) * step);
-      let yMax = Math.ceil(maxV / step) * step;
-      if (yMax <= yMin) yMax = yMin + step;
-
-      const minIdx = ao5All[0].idx;
-      const maxIdx = ao5All[ao5All.length - 1].idx;
-      const idxSpan = Math.max(1, maxIdx - minIdx);
-      const xOf = (i) => padL + ((i - minIdx) / idxSpan) * plotW;
-      const yOf = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
-
-      let html = "";
-      for (let v = yMin; v <= yMax + 1e-6; v += step) {
-        const y = yOf(v);
-        const label = step < 1000 ? `${(v / 1000).toFixed(1)}s` : `${Math.round(v / 1000)}s`;
-        html += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-dasharray="3 3" stroke-width="1" />`;
-        html += `<text x="${padL - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">${label}</text>`;
-      }
-
-      html += `<text x="${padL}" y="${H - 2}" text-anchor="start" fill="var(--muted-foreground)" font-size="9">#${minIdx + 1}</text>`;
-      html += `<text x="${W - padR}" y="${H - 2}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">#${maxIdx + 1}</text>`;
-
-      const drawSeries = (pts, color, strokeWidth) => {
-        if (pts.length === 0) return;
-
-        // Split into contiguous blocks of points that have a finite value (valid or provisional)
-        const blocks = [];
-        let curr = [];
-        for (const p of pts) {
-          if (p.val === Infinity) {
-            if (curr.length > 0) {
-              blocks.push(curr);
-              curr = [];
-            }
-          } else {
-            curr.push(p);
-          }
-        }
-        if (curr.length > 0) blocks.push(curr);
-
-        // Faint dashed bridges across all-DNF gaps (where even provisional mean cannot be computed)
-        for (let b = 0; b < blocks.length - 1; b++) {
-          const prev = blocks[b][blocks[b].length - 1];
-          const next = blocks[b + 1][0];
-          html += `<line x1="${xOf(prev.idx).toFixed(1)}" y1="${yOf(prev.val).toFixed(1)}" x2="${xOf(next.idx).toFixed(1)}" y2="${yOf(next.val).toFixed(1)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
-        }
-
-        // Trailing horizontal dashed line only if the latest window is completely all-DNF
-        if (blocks.length > 0 && pts[pts.length - 1].val === Infinity) {
-          const lastBlock = blocks[blocks.length - 1];
-          const lastFinite = lastBlock[lastBlock.length - 1];
-          const endIdx = pts[pts.length - 1].idx;
-          if (endIdx > lastFinite.idx) {
-            const y = yOf(lastFinite.val).toFixed(1);
-            html += `<line x1="${xOf(lastFinite.idx).toFixed(1)}" y1="${y}" x2="${xOf(endIdx).toFixed(1)}" y2="${y}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35" />`;
-          }
-        }
-
-        // Draw each contiguous block: solid between two non-provisional points, dashed otherwise
-        for (const block of blocks) {
-          if (block.length === 1) {
-            const p = block[0];
-            if (p.provisional) {
-              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${Math.max(1.5, strokeWidth / 2).toFixed(1)}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.65" />`;
-            } else {
-              html += `<circle cx="${xOf(p.idx).toFixed(1)}" cy="${yOf(p.val).toFixed(1)}" r="${(strokeWidth / 2).toFixed(1)}" fill="${color}" />`;
-            }
-            continue;
-          }
-
-          let runPts = [block[0]];
-          let runDashed = null;
-          const flushRun = () => {
-            if (runPts.length < 2) return;
-            const path = runPts.map((p, k) => `${k === 0 ? "M" : "L"} ${xOf(p.idx).toFixed(1)} ${yOf(p.val).toFixed(1)}`).join(" ");
-            if (runDashed) {
-              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${Math.max(1.5, strokeWidth - 0.5)}" stroke-dasharray="3 3" opacity="0.65" stroke-linecap="round" stroke-linejoin="round" />`;
-            } else {
-              html += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />`;
-            }
-          };
-
-          for (let k = 1; k < block.length; k++) {
-            const prev = block[k - 1];
-            const next = block[k];
-            const isDashed = prev.provisional || next.provisional;
-            if (runDashed === null) {
-              runDashed = isDashed;
-              runPts.push(next);
-            } else if (runDashed === isDashed) {
-              runPts.push(next);
-            } else {
-              flushRun();
-              runPts = [prev, next];
-              runDashed = isDashed;
-            }
-          }
-          flushRun();
-        }
-      };
-
-      drawSeries(ao5All, "var(--chart-1)", 2);
-      drawSeries(ao12All, "var(--chart-2)", 2.5);
-      drawSeries(ao50All, "var(--success)", 2.5);
-
-      svg.innerHTML = html;
+      drawTrendSeriesSvg(svg, [
+        { pts: ao5All, color: "var(--chart-1)", strokeWidth: 2 },
+        { pts: ao12All, color: "var(--chart-2)", strokeWidth: 2.5 },
+        { pts: ao50All, color: "var(--success)", strokeWidth: 2.5 }
+      ], {
+        emptyText: "有効な平均がないため推移を表示できません"
+      });
     }
 
     function renderDistChart() {
       const svg = document.getElementById("trendChart");
       const pts = solves
-        .map((s, idx) => ({
-          idx,
-          val: metricMode === "inspection"
-            ? (getEffectiveInspectionMs(s) ?? Infinity)
-            : getEffectiveMs(s)
-        }))
-        .filter((p) => p.val !== Infinity);
+        .map((s) => {
+          const rawVal = metricMode === "inspection"
+            ? s.inspectionMs
+            : (typeof s.timeMs === "number" ? (s.penalty === "+2" ? s.timeMs + 2000 : s.timeMs) : null);
+          return { val: rawVal, isDnf: s.penalty === "DNF" };
+        })
+        .filter((p) => typeof p.val === "number");
 
       if (pts.length < 2) {
-        svg.innerHTML = `<text x="180" y="64" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">2回以上記録するとタイム分布が表示されます</text>`;
+        setChartMessage(svg, "2回以上記録するとタイム分布が表示されます");
         return;
       }
 
@@ -1423,83 +1952,86 @@
       const hasPotentialOutlier = maxV > inlierMax;
       const maxNormalBins = hasPotentialOutlier ? 10 : 11;
       const binSteps = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 60000];
-      let binStep = binSteps.find((s) => {
+      const binStep = binSteps.find((s) => {
         const lo = Math.floor(minV / s) * s;
         const hi = Math.floor(inlierMax / s) * s + s;
         return (hi - lo) / s <= maxNormalBins;
-      }) || 60000;
+      }) || Math.max(60000, Math.ceil((inlierMax - minV + 1) / maxNormalBins / 60000) * 60000);
 
       const loBound = Math.floor(minV / binStep) * binStep;
       const hiBound = Math.floor(inlierMax / binStep) * binStep + binStep;
-      const numNormalBins = Math.max(hasPotentialOutlier ? 1 : 2, Math.round((hiBound - loBound) / binStep));
-      const hasOverflow = maxV >= hiBound;
+      const numNormalBins = Math.max(hasPotentialOutlier ? 1 : 2, Math.min(maxNormalBins, Math.round((hiBound - loBound) / binStep)));
+      const effectiveHiBound = loBound + numNormalBins * binStep;
+      const hasOverflow = maxV >= effectiveHiBound;
       const numBins = numNormalBins + (hasOverflow ? 1 : 0);
 
-      const allCounts = Array(numBins).fill(0);
-      const recentCounts = Array(numBins).fill(0);
-      const recentStartIdx = Math.max(0, solves.length - 12);
+      const okCounts = Array(numBins).fill(0);
+      const dnfCounts = Array(numBins).fill(0);
 
       for (const p of pts) {
         let b;
-        if (hasOverflow && p.val >= hiBound) {
+        if (hasOverflow && p.val >= effectiveHiBound) {
           b = numNormalBins;
         } else {
           b = Math.floor((p.val - loBound) / binStep);
           if (b < 0) b = 0;
           if (b >= numNormalBins) b = numNormalBins - 1;
         }
-        allCounts[b]++;
-        if (p.idx >= recentStartIdx) {
-          recentCounts[b]++;
-        }
+        if (p.isDnf) dnfCounts[b]++;
+        else okCounts[b]++;
       }
 
-      const maxCount = Math.max(1, ...allCounts);
-      const W = 360, H = 120, padL = 26, padR = 8, padT = 14, padB = 18;
+      const totals = okCounts.map((c, idx) => c + dnfCounts[idx]);
+      const maxCount = Math.max(1, ...totals);
+      const W = getChartWidth(svg), H = 120, padL = 30, padR = 10, padT = 14, padB = 18;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       const plotW = W - padL - padR;
       const plotH = H - padT - padB;
 
       let html = "";
-      // Horizontal baseline & top guide
       html += `<line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="var(--border)" stroke-width="1" />`;
       html += `<line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border)" stroke-dasharray="3 3" stroke-width="1" />`;
-      html += `<text x="${padL - 4}" y="${padT + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">${maxCount}</text>`;
-      html += `<text x="${padL - 4}" y="${padT + plotH + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="9">0</text>`;
+      html += `<text x="${padL - 5}" y="${padT + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">${maxCount}</text>`;
+      html += `<text x="${padL - 5}" y="${padT + plotH + 3}" text-anchor="end" fill="var(--muted-foreground)" font-size="10">0</text>`;
 
       const slotW = plotW / numBins;
-      const barW = Math.min(34, slotW * 0.68);
-      const showRecent = solves.length >= 12;
+      const barW = Math.min(44, slotW * 0.64);
+      const labelFontSize = slotW < 34 ? 9 : 10;
+      const fmtSec = (ms) => binStep < 1000 ? (ms / 1000).toFixed(1) : Math.round(ms / 1000);
 
       for (let b = 0; b < numBins; b++) {
         const cx = padL + (b + 0.5) * slotW;
         const bx = cx - barW / 2;
-        const cAll = allCounts[b];
-        const cRec = recentCounts[b];
+        const cOk = okCounts[b];
+        const cDnf = dnfCounts[b];
+        const cTot = cOk + cDnf;
 
-        const hAll = (cAll / maxCount) * plotH;
-        const yAll = padT + plotH - hAll;
-        if (cAll > 0) {
-          html += `<rect x="${bx.toFixed(1)}" y="${yAll.toFixed(1)}" width="${barW.toFixed(1)}" height="${hAll.toFixed(1)}" rx="2" fill="var(--chart-1)" opacity="${showRecent ? '0.4' : '0.85'}" />`;
-          html += `<text x="${cx.toFixed(1)}" y="${(yAll - 3).toFixed(1)}" text-anchor="middle" fill="var(--muted-foreground)" font-size="9">${cAll}</text>`;
+        const isOv = hasOverflow && b === numNormalBins;
+        const rangeLabel = isOv
+          ? `${fmtSec(effectiveHiBound)}s+`
+          : `&lt;${fmtSec(loBound + (b + 1) * binStep)}s`;
+        const rangeDesc = isOv
+          ? `${fmtSec(effectiveHiBound)}s以上`
+          : `${fmtSec(loBound + b * binStep)}s〜${fmtSec(loBound + (b + 1) * binStep)}s`;
+
+        if (cTot > 0) {
+          const hOk = (cOk / maxCount) * plotH;
+          const hDnf = (cDnf / maxCount) * plotH;
+          const yOk = padT + plotH - hOk;
+          const yDnf = yOk - hDnf;
+          const pct = Math.round((cOk / cTot) * 100);
+          const tip = `${rangeDesc}: 成功 ${cOk} / DNF ${cDnf} (成功率 ${pct}%)`;
+          html += `<g><title>${tip}</title>`;
+          if (cOk > 0) {
+            html += `<rect x="${bx.toFixed(1)}" y="${yOk.toFixed(1)}" width="${barW.toFixed(1)}" height="${hOk.toFixed(1)}" rx="1.5" fill="var(--chart-1)" opacity="0.82" />`;
+          }
+          if (cDnf > 0) {
+            html += `<rect x="${bx.toFixed(1)}" y="${yDnf.toFixed(1)}" width="${barW.toFixed(1)}" height="${hDnf.toFixed(1)}" rx="1.5" fill="var(--error)" opacity="0.88" />`;
+          }
+          html += `<text x="${cx.toFixed(1)}" y="${(yDnf - 3).toFixed(1)}" text-anchor="middle" fill="var(--muted-foreground)" font-size="10">${cTot}</text></g>`;
         }
 
-        if (showRecent && cRec > 0) {
-          const hRec = (cRec / maxCount) * plotH;
-          const yRec = padT + plotH - hRec;
-          const recW = barW * 0.6;
-          const recX = cx - recW / 2;
-          html += `<rect x="${recX.toFixed(1)}" y="${yRec.toFixed(1)}" width="${recW.toFixed(1)}" height="${hRec.toFixed(1)}" rx="1.5" fill="var(--chart-2)" opacity="0.95" />`;
-        }
-
-        const fmtSec = (ms) => binStep < 1000 ? (ms / 1000).toFixed(1) : Math.round(ms / 1000);
-        let rangeLabel;
-        if (hasOverflow && b === numNormalBins) {
-          rangeLabel = `&gt;${fmtSec(hiBound)}s`;
-        } else {
-          const endSec = loBound + (b + 1) * binStep;
-          rangeLabel = `&lt;${fmtSec(endSec)}s`;
-        }
-        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="10">${rangeLabel}</text>`;
+        html += `<text x="${cx.toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="var(--muted-foreground)" font-size="${labelFontSize}">${rangeLabel}</text>`;
       }
 
       svg.innerHTML = html;
@@ -1509,30 +2041,44 @@
       if (!solves[index]) return;
       solves[index].penalty = (solves[index].penalty === penalty && penalty !== "OK") ? "OK" : penalty;
       saveSolves();
-      if (index === solves.length - 1 && state === "STOPPED") {
-        timerDisplayEl.textContent = formatSolve(solves[index]);
-      }
       renderStatsAndHistory();
     };
 
     window.deleteSolve = function(index) {
+      const wasLatest = index === solves.length - 1;
       solves.splice(index, 1);
+      if (window.expandedSolveIndex === index) window.expandedSolveIndex = null;
+      else if (window.expandedSolveIndex !== null && window.expandedSolveIndex > index) window.expandedSolveIndex--;
       saveSolves();
-      if (solves.length === 0 && state === "STOPPED") {
+      if ((solves.length === 0 || wasLatest) && state === "STOPPED") {
         cancelTimer();
       }
       renderStatsAndHistory();
     };
 
     // Quick actions for latest solve
-    document.getElementById("btnOk").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "OK"); });
-    document.getElementById("btnPlus2").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "+2"); });
-    document.getElementById("btnDnf").addEventListener("click", () => { if (solves.length) window.setPenalty(solves.length - 1, "DNF"); });
-    document.getElementById("btnDeleteLast").addEventListener("click", () => { if (solves.length) window.deleteSolve(solves.length - 1); });
+    document.getElementById("btnOk").addEventListener("click", (e) => { e.currentTarget.blur(); if (solves.length) window.setPenalty(solves.length - 1, "OK"); });
+    document.getElementById("btnPlus2").addEventListener("click", (e) => { e.currentTarget.blur(); if (solves.length) window.setPenalty(solves.length - 1, "+2"); });
+    document.getElementById("btnDnf").addEventListener("click", (e) => { e.currentTarget.blur(); if (solves.length) window.setPenalty(solves.length - 1, "DNF"); });
+    document.getElementById("btnDeleteLast").addEventListener("click", (e) => { e.currentTarget.blur(); if (solves.length) window.deleteSolve(solves.length - 1); });
+
+    // No-Time mode actions
+    if (noTimeOkBtnEl) {
+      noTimeOkBtnEl.addEventListener("click", (e) => {
+        e.currentTarget.blur();
+        recordNoTimeSolve("OK");
+      });
+    }
+    if (noTimeDnfBtnEl) {
+      noTimeDnfBtnEl.addEventListener("click", (e) => {
+        e.currentTarget.blur();
+        recordNoTimeSolve("DNF");
+      });
+    }
 
     // Settings & Controls
     nextScrambleBtn.addEventListener("click", (e) => {
-      e.target.blur();
+      e.currentTarget.blur();
       refreshScramble();
     });
 
@@ -1556,6 +2102,15 @@
       switchSession();
     });
 
+    timeVisibilityEl.addEventListener("change", (e) => {
+      e.target.blur();
+      saveSettings();
+      if (state === "INSPECTION" || state === "READY" || state === "RUNNING") {
+        setTimerVisual(state);
+      }
+      renderStatsAndHistory();
+    });
+
     centerAlignModeEl.addEventListener("change", (e) => {
       e.target.blur();
       saveSettings();
@@ -1563,17 +2118,18 @@
     });
 
     soundToggleEl.addEventListener("click", (e) => {
-      e.target.blur();
+      e.currentTarget.blur();
       soundEnabled = !soundEnabled;
       soundToggleEl.textContent = soundEnabled ? "🔊 音: ON" : "🔇 音: OFF";
       saveSettings();
     });
 
     netToggleEl.addEventListener("click", (e) => {
-      e.target.blur();
+      e.currentTarget.blur();
       showNet = !showNet;
       applyNetVisibility();
       saveSettings();
+      renderChart();
     });
 
     // Color Palette Customizer
